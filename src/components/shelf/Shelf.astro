@@ -1,0 +1,400 @@
+---
+// 首屏书架
+import { site } from '@/config/site';
+import type { CategoryWithCases } from '@/lib/cases';
+import { categoryUrl } from '@/lib/cases';
+import { withBase } from '@/lib/url';
+import Book from './Book.astro';
+import HalftoneDefs from './HalftoneDefs.astro';
+import Timeline from './Timeline.astro';
+
+interface Props {
+  items: CategoryWithCases[];
+}
+
+const { items } = Astro.props;
+const defaultIndex = Math.max(
+  0,
+  items.findIndex((c) => c.id === site.defaultCategory),
+);
+const current = items[defaultIndex];
+const pad = (n: number) => String(n).padStart(2, '0');
+
+const data = {
+  defaultIndex,
+  items: items.map((c) => {
+    const years = [...new Set(c.cases.map((x) => x.data.year))].sort();
+    return {
+      id: c.id,
+      no: c.no,
+      name: c.name,
+      en: c.en,
+      count: c.count,
+      // 12 本书都能翻开；还没有作品的分类，子页会显示“整理中”
+      url: categoryUrl(c.id),
+      years,
+      year: years.length ? years[years.length - 1] : null,
+    };
+  }),
+};
+const json = JSON.stringify(data).replace(/</g, '\\u003c');
+---
+
+<section id="shelf" class="hero" data-shelf aria-labelledby="shelf-title">
+  <h1 id="shelf-title" class="sr-only">{site.name} · {site.tagline}</h1>
+
+  <div class="bgwords" aria-hidden="true">
+    <span class="t-display halftone vertical w-left">设计</span>
+    <span class="t-display halftone vertical w-right">档案</span>
+  </div>
+
+  <HalftoneDefs />
+
+  <!-- 首屏按行排布（不用绝对定位），屏幕再矮也不会让标题压到时间轴 -->
+  <div class="hero-stage">
+    <canvas class="floor" aria-hidden="true"></canvas>
+    <div
+      class="shelf-3d"
+      tabindex="0"
+      role="group"
+      aria-roledescription="书架"
+      aria-label="作品分类书架：左右方向键切换，回车打开"
+    >
+      <div class="stage" aria-hidden="true">
+        {items.map((c, i) => <Book category={c} index={i} />)}
+      </div>
+      <i class="probe" aria-hidden="true"></i>
+    </div>
+  </div>
+
+  <div class="hero-caption">
+    <div class="caption" aria-hidden="true" data-glyphs="件作品整理中翻开">
+      <span class="mask cap-title t-serif"><span class="cap-line">{current.name}</span></span>
+      <span class="mask cap-en t-label"><span class="cap-line">{current.en}</span></span>
+      <i class="cap-rule"></i>
+      <span class="mask cap-count">
+        <span class="cap-line">
+          {current.count > 0 ? (
+            <>
+              <span class="t-mono">{pad(current.count)}</span> 件作品
+            </>
+          ) : (
+            '整理中'
+          )}
+        </span>
+      </span>
+    </div>
+    <button class="arrow prev" type="button" aria-label="上一本">
+      <svg viewBox="0 0 28 12" aria-hidden="true"><path d="M7 1 2 6l5 5M2 6h25"></path></svg>
+    </button>
+    <button class="arrow next" type="button" aria-label="下一本">
+      <svg viewBox="0 0 28 12" aria-hidden="true"><path d="m21 1 5 5-5 5M26 6H1"></path></svg>
+    </button>
+  </div>
+  <p class="sr-only" aria-live="polite" data-live></p>
+
+  <div class="hero-timeline">
+    <Timeline />
+  </div>
+
+  <div class="hero-foot t-label">
+    <span class="hint">拖动 · ← → 翻阅</span>
+    <a class="down" href={withBase('/#services')}>向下 ↓</a>
+  </div>
+
+  <nav class="fallback" aria-label="作品分类">
+    <ul>
+      {
+        items.map((c) => (
+          <li>
+            <a href={categoryUrl(c.id)}>
+              {c.no} {c.name}（{c.count > 0 ? `${c.count} 件作品` : '整理中'}）
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+
+  <script type="application/json" data-shelf-data is:inline set:html={json} />
+</section>
+
+<noscript>
+  <style>
+    .hero .shelf-3d,
+    .hero .floor,
+    .hero .arrow,
+    .hero .hero-foot .hint {
+      display: none;
+    }
+    .hero .cap-line {
+      transform: none !important;
+    }
+    .hero .fallback {
+      position: static;
+      width: auto;
+      height: auto;
+      clip-path: none;
+      margin: 0;
+      overflow: visible;
+      padding: 30vh var(--gutter) 0;
+      position: relative;
+      z-index: 20;
+    }
+  </style>
+</noscript>
+
+<script>
+  import { initShelf } from '@/scripts/shelf/engine';
+  document.querySelectorAll<HTMLElement>('[data-shelf]').forEach(initShelf);
+</script>
+
+<style>
+  .hero {
+    --H: var(--shelf-h);
+    --ws: calc(var(--H) * var(--spine-ratio));
+    --d: calc(var(--H) * var(--cover-ratio));
+    --cap-size: clamp(28px, 3.4vw, 46px);
+    counter-increment: sec; /* 书架算首页第 01 个板块 */
+    position: relative;
+    min-height: 100svh;
+    /* 行：顶栏 / 上留白 / 书架 / 标题 / 下留白 / 时间轴 / 底部一行。
+       书架中线大约落在 40% 高度；屏幕不够高时整体变高，不会互相覆盖 */
+    display: grid;
+    grid-template-rows: var(--topbar-h) minmax(8px, 0.5fr) auto auto minmax(20px, 1fr) auto auto;
+    overflow: hidden;
+    /* clip：不形成滚动容器。hidden 会被 scrollIntoView / 聚焦悄悄横向滚动，整个书架偏到一边 */
+    overflow: clip;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* 背景竖排网点大字 */
+  .bgwords span {
+    position: absolute;
+    z-index: var(--z-bg);
+    font-size: var(--fs-bgword);
+    line-height: 1.02;
+    letter-spacing: 0.02em;
+  }
+  .w-left {
+    left: var(--gutter);
+    top: 14%;
+  }
+  .w-right {
+    right: var(--gutter);
+    top: 9%;
+  }
+
+  /* 书架所在的一行 */
+  .hero-stage {
+    grid-row: 3;
+    position: relative;
+    z-index: var(--z-shelf);
+    height: calc(var(--H) + 24px);
+  }
+
+  /* 地面半调阴影 */
+  .floor {
+    position: absolute;
+    left: 50%;
+    top: calc(50% + var(--H) * 0.5);
+    width: min(96vw, calc(var(--H) * 3.6));
+    height: calc(var(--H) * 0.24);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  /* 3D 书架 */
+  .shelf-3d {
+    position: absolute;
+    inset: 0;
+    perspective: 1400px;
+    perspective-origin: 50% 50%;
+    touch-action: pan-y;
+    outline: none;
+  }
+  .shelf-3d:focus-visible {
+    outline: 1px dashed var(--accent);
+    outline-offset: -8px;
+  }
+  .stage {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
+  }
+  .probe {
+    position: absolute;
+    top: 0;
+    width: 1px;
+    height: var(--H);
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .hero:not(.is-ready) :global(.book) {
+    visibility: hidden;
+  }
+
+  /* 标题行（箭头也在这一行） */
+  .hero-caption {
+    grid-row: 4;
+    position: relative;
+    z-index: var(--z-ui);
+    padding-top: 3.2vh;
+  }
+  .caption {
+    width: min(80vw, 640px);
+    margin-inline: auto;
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    text-align: center;
+    color: var(--accent);
+    pointer-events: none;
+  }
+  .mask {
+    display: grid;
+    overflow: hidden;
+    padding-block: 0.08em;
+  }
+  .caption :global(.cap-line) {
+    grid-area: 1 / 1;
+    display: block;
+    white-space: nowrap;
+  }
+  .hero:not(.is-ready) .cap-line {
+    transform: translateY(105%);
+  }
+  .cap-title {
+    font-size: var(--cap-size);
+    line-height: 1.12;
+    letter-spacing: 0.04em;
+  }
+  .cap-en {
+    letter-spacing: 0.24em;
+    font-size: 10.5px;
+  }
+  .cap-rule {
+    width: 18px;
+    height: 1px;
+    background: currentColor;
+  }
+  .cap-count {
+    font-size: var(--fs-sm);
+    line-height: 1.4;
+    color: var(--ink);
+    letter-spacing: 0.08em;
+  }
+
+  /* 左右箭头：与标题同一行 */
+  .arrow {
+    position: absolute;
+    top: calc(3.2vh + var(--cap-size) * 0.62 - 22px);
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    color: var(--accent);
+  }
+  .arrow svg {
+    width: 28px;
+    height: 12px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.2;
+  }
+  .prev {
+    left: calc(50% - min(19vw, 250px) - 22px);
+  }
+  .next {
+    left: calc(50% + min(19vw, 250px) - 22px);
+  }
+  .arrow:hover svg {
+    transform: translateX(var(--nudge, 0));
+  }
+  .prev {
+    --nudge: -3px;
+  }
+  .next {
+    --nudge: 3px;
+  }
+  .arrow svg {
+    transition: transform var(--dur-s) var(--ease-out);
+  }
+
+  /* 时间轴与底部一行 */
+  .hero-timeline {
+    grid-row: 6;
+    position: relative;
+    z-index: var(--z-ui);
+  }
+  .hero-foot {
+    grid-row: 7;
+    position: relative;
+    z-index: var(--z-ui);
+    padding: 20px var(--gutter) 24px;
+    display: flex;
+    justify-content: space-between;
+    color: var(--accent);
+    font-family: var(--font-sans);
+    letter-spacing: 0.2em;
+  }
+
+  /* 只给读屏和无脚本环境 */
+  .fallback {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .hero.is-dragging {
+    cursor: grabbing;
+  }
+
+  @media (max-width: 767px) {
+    .hero {
+      min-height: calc(100svh - var(--cta-h, 0px));
+      /* 手机屏更高更窄：上下留白更均匀，书架不贴顶 */
+      grid-template-rows: var(--topbar-h) minmax(8px, 1fr) auto auto minmax(16px, 1fr) auto auto;
+      --cap-size: 27px;
+    }
+    .hero-caption {
+      padding-top: 2vh;
+    }
+    .arrow {
+      top: calc(2vh + var(--cap-size) * 0.62 - 22px);
+    }
+    .bgwords span {
+      opacity: 0.8;
+    }
+    .w-left {
+      top: 12%;
+    }
+    .w-right {
+      top: 8%;
+    }
+    .prev {
+      left: 4px;
+    }
+    .next {
+      left: auto;
+      right: 4px;
+    }
+    .hero-foot {
+      padding: 14px var(--gutter) 16px;
+    }
+    .hero-foot .hint {
+      display: none;
+    }
+    .hero-foot .down {
+      margin-left: auto;
+    }
+  }
+</style>

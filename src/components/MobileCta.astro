@@ -1,0 +1,157 @@
+---
+// 手机端底部常驻按钮「加微信聊合作」：点开从底部升起一张微信名片
+// （二维码 + 复制微信号 + 打开微信）。名片内容与「联系」板块共用 WechatCard。
+import { site } from '@/config/site';
+import WechatCard from '@/components/contact/WechatCard.astro';
+import { brief } from '@/data/brief';
+import { withBase } from '@/lib/url';
+---
+
+<button class="cta" type="button" data-cta-open aria-haspopup="dialog">
+  <span>{site.ctaLabel}</span>
+  <svg viewBox="0 0 28 12" aria-hidden="true"><path d="m21 1 5 5-5 5M26 6H1"></path></svg>
+</button>
+
+<dialog class="cta-sheet" aria-label={site.ctaLabel} data-cta-sheet>
+  <div class="cta-panel">
+    <div class="cta-bar">
+      <p class="t-label">{site.ctaLabel}</p>
+      <button class="box t-label cta-close" type="button" data-cta-close>关闭</button>
+    </div>
+    <WechatCard compact />
+    <p class="cta-tip">复制微信号后，在微信里搜索添加即可。</p>
+    <a class="box cta-brief" href={withBase('/#brief')} data-cta-brief>{brief.mobileLink}</a>
+  </div>
+</dialog>
+
+<script>
+  const sheet = document.querySelector<HTMLDialogElement>('[data-cta-sheet]');
+  const openBtn = document.querySelector<HTMLElement>('[data-cta-open]');
+  const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (sheet && openBtn) {
+    const panel = sheet.querySelector<HTMLElement>('.cta-panel')!;
+    const slide = (open: boolean) =>
+      panel.animate([{ transform: 'translateY(100%)' }, { transform: 'translateY(0)' }], {
+        duration: reduced() ? 1 : 520,
+        easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+        direction: open ? 'normal' : 'reverse',
+        fill: 'both',
+      });
+
+    const close = async () => {
+      if (!sheet.open) return;
+      await slide(false).finished.catch(() => {});
+      sheet.close();
+    };
+
+    openBtn.addEventListener('click', () => {
+      sheet.showModal();
+      slide(true);
+    });
+    sheet.querySelector('[data-cta-close]')?.addEventListener('click', close);
+    // 「先填需求单」：立刻关掉名片，再跳到联系板块的需求单
+    sheet.querySelector('[data-cta-brief]')?.addEventListener('click', () => sheet.close());
+    // 点遮罩关闭
+    sheet.addEventListener('click', (e) => {
+      if (e.target === sheet) close();
+    });
+    // ESC：先播完收起动画再关
+    sheet.addEventListener('cancel', (e) => {
+      e.preventDefault();
+      close();
+    });
+  }
+</script>
+
+<style>
+  .cta,
+  .cta-sheet {
+    display: none;
+  }
+  @media (max-width: 767px) {
+    :global(:root) {
+      --cta-h: calc(52px + env(safe-area-inset-bottom, 0px));
+    }
+    :global(body) {
+      padding-bottom: var(--cta-h);
+    }
+    .cta {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: var(--z-cta);
+      height: var(--cta-h);
+      padding: 0 var(--gutter) env(safe-area-inset-bottom, 0px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--accent);
+      color: var(--on-accent);
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+    }
+    .cta svg {
+      width: 28px;
+      height: 12px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.2;
+    }
+
+    .cta-sheet[open] {
+      display: block;
+    }
+    .cta-sheet {
+      inset: auto 0 0 0;
+      width: 100%;
+      max-width: none;
+      max-height: none;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+    .cta-sheet::backdrop {
+      background: color-mix(in oklab, var(--ink) 38%, transparent);
+    }
+    .cta-panel {
+      padding: var(--sp-5) var(--gutter) calc(var(--sp-6) + env(safe-area-inset-bottom, 0px));
+      background: var(--sheet);
+      border-top: 1px solid var(--rule);
+    }
+    .cta-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--sp-5);
+      color: var(--accent);
+    }
+    .cta-bar .t-label {
+      font-family: var(--font-sans);
+      letter-spacing: 0.2em;
+    }
+    .cta-close {
+      height: 30px;
+      padding: 0 12px;
+      color: var(--ink);
+    }
+    .cta-tip {
+      margin-top: var(--sp-5);
+      font-size: var(--fs-sm);
+      color: var(--muted);
+    }
+    .cta-brief {
+      width: 100%;
+      height: 44px;
+      margin-top: var(--sp-4);
+      justify-content: center;
+      color: var(--accent);
+      border-color: var(--accent);
+      font-size: var(--fs-sm);
+      letter-spacing: 0.12em;
+    }
+  }
+</style>

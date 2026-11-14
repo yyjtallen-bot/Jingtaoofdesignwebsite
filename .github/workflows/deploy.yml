@@ -1,0 +1,47 @@
+# 自动发布：仓库 main 分支一有改动（包括网页后台保存），就重新打包并更新网站。
+# 进度在 GitHub 仓库的「Actions」页能看到，绿勾 = 发布成功。
+name: 发布网站
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      # 源字体（大文件，不放仓库）缓存起来，下次打包不用重新下载
+      - uses: actions/cache@v4
+        with:
+          path: fonts-src
+          key: fonts-src-${{ hashFiles('fonts.config.mjs', 'scripts/fetch-fonts.mjs') }}
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,11 @@
+---
+// 开发时：直接引用完整源字体。
+// 构建时：输出一个标记，构建完成后由 integrations/font-subset 替换成该页面的子集 @font-face。
+import fontsConfig from '../../fonts.config.mjs';
+import { MARKER, devFontFaceCss } from '../../integrations/font-subset/css.mjs';
+
+const isDev = import.meta.env.DEV;
+const devCss = isDev ? devFontFaceCss(fontsConfig, import.meta.env.BASE_URL) : '';
+---
+
+{isDev ? <style is:inline set:html={devCss} /> : <Fragment set:html={MARKER} />}

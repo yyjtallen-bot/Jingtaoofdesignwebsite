@@ -1,0 +1,87 @@
+---
+// 下一个案例；没有下一个时（只有一个案例）显示“返回分类”
+import { getCategory, type Category } from '@/data/categories';
+import { caseUrl, categoryUrl, type Case } from '@/lib/cases';
+
+interface Props {
+  next?: Case;
+  category: Category;
+}
+const { next, category } = Astro.props;
+const nextCat = next ? getCategory(next.data.category) : undefined;
+const href = next ? caseUrl(next) : categoryUrl(category.id);
+---
+
+<nav class="cn wrap" aria-label={next ? '下一个案例' : '返回分类'}>
+  <a class="cn-link" href={href} data-cursor="open" data-cursor-label={next ? '下一个' : '返回'}>
+    <span class="cn-k t-label">{next ? '下一个案例' : '返回分类'}</span>
+    <span class="cn-title t-serif">{next ? next.data.title : category.name}</span>
+    <span class="cn-meta t-label">
+      {
+        next && nextCat ? (
+          <>
+            <span class="t-mono">No.{nextCat.no}</span> {nextCat.name} · <span class="t-mono">{next.data.year}</span>
+          </>
+        ) : (
+          <>
+            <span class="t-mono">No.{category.no}</span> {category.en}
+          </>
+        )
+      }
+    </span>
+    <svg class="cn-arrow" viewBox="0 0 56 14" aria-hidden="true"><path d="m48 1 7 6-7 6M55 7H1"></path></svg>
+  </a>
+</nav>
+
+<style>
+  .cn {
+    padding-bottom: var(--sp-10);
+  }
+  .cn-link {
+    position: relative;
+    display: grid;
+    gap: var(--sp-4);
+    padding-block: var(--sp-8);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .cn-k,
+  .cn-meta {
+    color: var(--muted);
+    font-family: var(--font-sans);
+    letter-spacing: 0.2em;
+  }
+  .cn-meta .t-mono {
+    text-transform: none;
+  }
+  .cn-title {
+    max-width: 18em;
+    font-size: var(--fs-h2);
+    line-height: 1.2;
+    color: var(--ink);
+    transition: color var(--dur-s) var(--ease-out);
+  }
+  .cn-arrow {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    width: 56px;
+    height: 14px;
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1.2;
+    transition: transform var(--dur-m) var(--ease-out);
+  }
+  .cn-link:hover .cn-title {
+    color: var(--accent);
+  }
+  .cn-link:hover .cn-arrow {
+    transform: translateX(8px);
+  }
+  @media (max-width: 767px) {
+    .cn-arrow {
+      position: static;
+      margin-top: var(--sp-3);
+    }
+  }
+</style>

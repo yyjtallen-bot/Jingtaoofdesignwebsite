@@ -1,0 +1,41 @@
+---
+// 案例详情页 = 若干独立组件按顺序拼起来（都在 src/components/case/）：
+//   顶栏 · 阅读进度条 · 抬头 · 封面 · 信息条 · 正文 · 下一个案例
+// 想调整某一块，改对应组件即可；想换顺序，改下面的顺序。
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageBar from '@/components/case/PageBar.astro';
+import ReadingProgress from '@/components/case/ReadingProgress.astro';
+import CaseHeader from '@/components/case/CaseHeader.astro';
+import CaseCover from '@/components/case/CaseCover.astro';
+import CaseInfo from '@/components/case/CaseInfo.astro';
+import CaseBody from '@/components/case/CaseBody.astro';
+import CaseNext from '@/components/case/CaseNext.astro';
+import { render } from 'astro:content';
+import { getCategory } from '@/data/categories';
+import { categoryUrl, getAllCases, getNextCase, type Case } from '@/lib/cases';
+
+export async function getStaticPaths() {
+  const all = await getAllCases();
+  return all.map((entry) => ({
+    params: { category: entry.data.category, slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props as { entry: Case };
+const { Content } = await render(entry);
+const category = getCategory(entry.data.category)!;
+const next = await getNextCase(entry);
+---
+
+<BaseLayout title={entry.data.title} description={entry.data.summary} surface="sheet" image={entry.data.cover}>
+  <ReadingProgress />
+  <PageBar backHref={categoryUrl(category.id)} backLabel={category.name} />
+  <main id="main">
+    <CaseHeader entry={entry} category={category} />
+    <CaseCover entry={entry} />
+    <CaseInfo entry={entry} />
+    <CaseBody><Content /></CaseBody>
+    <CaseNext next={next} category={category} />
+  </main>
+</BaseLayout>

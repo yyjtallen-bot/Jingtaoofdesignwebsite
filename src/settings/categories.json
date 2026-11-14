@@ -1,0 +1,19 @@
+﻿{
+  "app": { "name": "APP 界面", "en": "App Interface", "binding": "accent", "intro": "[分类简介]", "cover": "", "spine": "" },
+  "web": { "name": "网页设计", "en": "Web Design", "binding": "bone", "intro": "[分类简介]", "cover": "", "spine": "" },
+  "miniapp": { "name": "小程序", "en": "Mini Program", "binding": "kraft", "intro": "[分类简介]", "cover": "", "spine": "" },
+  "admin": { "name": "B 端后台", "en": "Admin & Dashboard", "binding": "ink", "intro": "[分类简介]", "cover": "", "spine": "" },
+  "motion": { "name": "交互动效", "en": "Interaction & Motion", "binding": "bone", "intro": "[分类简介]", "cover": "", "spine": "" },
+  "identity": { "name": "Logo/VI", "en": "Logo & Identity", "binding": "kraft", "intro": "[分类简介]", "cover": "", "spine": "" },
+  "poster": { "name": "海报", "en": "Poster", "binding": "accent", "intro": "[分类简介]", "cover": "", "spine": "" },
+  "print": { "name": "名片与物料", "en": "Stationery & Print", "binding": "bone", "intro": "[分类简介]", "cover": "", "spine": "" },
+  "packaging": { "name": "包装设计", "en": "Packaging", "binding": "kraft", "intro": "[分类简介]", "cover": "", "spine": "" },
+  "illustration": { "name": "插画", "en": "Illustration", "binding": "ink", "intro": "[分类简介]", "cover": "", "spine": "" },
+  "retail": { "name": "门店视觉", "en": "Retail Visual", "binding": "bone", "intro": "[分类简介]", "cover": "", "spine": "" },
+  "ip": { "name": "短视频与 IP", "en": "Short Video & IP", "binding": "kraft", "intro": "[分类简介]", "cover": "", "spine": "" },
+  "empty": {
+    "title": "整理中",
+    "text": "[说明：这一类作品正在整理，可以先加微信，发你过往案例]",
+    "button": "加微信索取"
+  }
+}

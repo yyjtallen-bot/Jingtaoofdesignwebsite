@@ -1,0 +1,84 @@
+---
+// 分类子页的内容：独立页面 /work/<分类>/ 直接渲染它；
+// 首页点开封面时，浮层会取这个页面里 [data-sheet-content] 的部分塞进来。
+// 样式在 src/styles/sheet.css（全局），这里不要写组件作用域样式。
+// 还没有作品的分类：显示“整理中”说明 + 微信名片（文字在 src/data/categories.ts 的 emptyState）。
+import CoverArt from '@/components/shelf/CoverArt.astro';
+import WechatCard from '@/components/contact/WechatCard.astro';
+import { emptyState } from '@/data/categories';
+import type { CategoryWithCases } from '@/lib/cases';
+import CaseCard from './CaseCard.astro';
+
+interface Props {
+  category: CategoryWithCases;
+}
+const { category: c } = Astro.props;
+
+const isEmpty = c.count === 0;
+const years = [...new Set(c.cases.map((x) => x.data.year))].sort();
+const yearText = years.length > 1 ? `${years[0]} — ${years[years.length - 1]}` : (years[0] ?? '');
+const count = String(c.count).padStart(2, '0');
+---
+
+<article class="cs" data-sheet-content data-category={c.id}>
+  <section class="cs-hero">
+    <div class="cs-text">
+      <p class="mask">
+        <span class="cs-kicker t-label" data-rise>
+          <span class="t-mono">No.{c.no}</span>
+          <span>{c.en}</span>
+        </span>
+      </p>
+      <h1 class="mask cs-title"><span data-rise>{c.name}</span></h1>
+      <p class="mask">
+        <span class="cs-meta t-mono" data-rise>
+          {isEmpty ? emptyState.title : `${count} 件作品${yearText ? ` · ${yearText}` : ''}`}
+        </span>
+      </p>
+      <p class="mask"><span class="cs-intro" data-rise>{c.intro}</span></p>
+      <p class="mask">
+        <a class="cs-jump box t-label" href="#cs-works" data-rise>
+          {isEmpty ? emptyState.button : '查看作品'} <span aria-hidden="true">↓</span>
+        </a>
+      </p>
+    </div>
+    <figure class="cs-visual" data-ink>
+      <CoverArt category={c} widths={[600, 900, 1300]} sizes="(max-width: 767px) 70vw, 40vw" eager />
+    </figure>
+  </section>
+
+  <section class="cs-works" id="cs-works">
+    <header class="cs-works-head">
+      <h2>作品</h2>
+      <span class="t-mono">{isEmpty ? emptyState.title : count}</span>
+    </header>
+
+    {
+      isEmpty ? (
+        <div class="cs-empty">
+          <div class="cs-empty-msg">
+            <p class="cs-empty-title t-serif">{emptyState.title}</p>
+            <p class="cs-empty-text">{emptyState.text}</p>
+          </div>
+          <div class="cs-empty-wx">
+            <WechatCard compact />
+          </div>
+          {/* 三个空位，提示这里将来是作品网格 */}
+          <ul class="cs-grid cs-ghosts" aria-hidden="true">
+            {[1, 2, 3].map((n) => (
+              <li class="cs-ghost">
+                <span class="t-mono">{`${c.no}-${String(n).padStart(2, '0')}`}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <ul class="cs-grid">
+          {c.cases.map((entry) => (
+            <CaseCard entry={entry} />
+          ))}
+        </ul>
+      )
+    }
+  </section>
+</article>

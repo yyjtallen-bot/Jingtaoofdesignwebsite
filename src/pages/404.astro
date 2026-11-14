@@ -1,0 +1,27 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Topbar from '@/components/Topbar.astro';
+import { withBase } from '@/lib/url';
+---
+
+<BaseLayout title="页面不存在" noindex>
+  <Topbar />
+  <main class="wrap nf" id="main">
+    <p class="t-label t-mono">404</p>
+    <h1>页面不存在</h1>
+    <a class="box t-label" href={withBase('/')}>返回首页</a>
+  </main>
+</BaseLayout>
+
+<style>
+  .nf {
+    min-height: 70svh;
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    gap: var(--sp-5);
+  }
+  h1 {
+    color: var(--accent);
+  }
+</style>

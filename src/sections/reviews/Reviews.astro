@@ -1,0 +1,183 @@
+---
+// 「客户评价」：打码后的微信截图错落摆放
+// （说明和截图在后台 / src/settings/reviews.json；也可以把图放 src/assets/reviews/）
+import Img from '@/components/Img.astro';
+import Section from '@/components/Section.astro';
+import { getReviewImages, getUploadedImage } from '@/lib/assets';
+import { reviews as d } from './data';
+
+const images = getReviewImages();
+// 图片比说明多时，多出来的图也显示（说明留空）
+const count = Math.max(d.items.length, images.length);
+const list = Array.from({ length: count }, (_, i) => {
+  const it = d.items[i];
+  return {
+    client: it?.client ?? '',
+    project: it?.project ?? '',
+    // 后台上传的截图优先，没有就按顺序用 src/assets/reviews/ 里的图
+    image: getUploadedImage(it?.image, `客户评价第 ${i + 1} 条的截图`) ?? images[i],
+  };
+});
+
+// 占位卡片里的“聊天气泡”：左右交替、长短不一
+const bubbles = [
+  ['l', 62],
+  ['r', 48],
+  ['l', 78],
+  ['l', 40],
+  ['r', 70],
+  ['r', 36],
+  ['l', 56],
+] as const;
+---
+
+<Section id="reviews" title={d.title} en={d.en} lead={d.lead}>
+  <ul class="rv-wall" data-zoomable>
+    {
+      list.map((r, i) => (
+        <li class="rv" style={`--i:${i % 3}`}>
+          <figure class="rv-card">
+            <div class="rv-shot" data-reveal="clip" style={`--i:${i % 3}`}>
+              {r.image ? (
+                <Img src={r.image} alt={`客户评价截图：${r.client}`} widths={[360, 720]} sizes="(max-width: 767px) 70vw, 24vw" />
+              ) : (
+                <div class="rv-ph" aria-hidden="true">
+                  {bubbles.map(([side, w], k) => (
+                    <i class:list={['bb', side]} style={`width:${Math.min(84, w + ((i * 7 + k * 11) % 17))}%`} />
+                  ))}
+                  <span class="t-label rv-ph-label">[微信截图]</span>
+                </div>
+              )}
+            </div>
+            {(r.client || r.project) && (
+              <figcaption class="t-label">
+                {r.client}
+                {r.client && r.project && ' · '}
+                {r.project}
+              </figcaption>
+            )}
+          </figure>
+        </li>
+      ))
+    }
+  </ul>
+</Section>
+
+<style>
+  /* 错落：三列，每列纵向错开，卡片轻微倾斜 */
+  .rv-wall {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--sp-8) var(--sp-7);
+    align-items: start;
+    padding-inline: var(--sp-4);
+  }
+  .rv:nth-child(3n + 2) {
+    margin-top: var(--sp-9);
+  }
+  .rv:nth-child(3n) {
+    margin-top: var(--sp-7);
+  }
+  .rv:nth-child(3n + 1) {
+    --tilt: -1.2deg;
+    --shift: 6%;
+  }
+  .rv:nth-child(3n + 2) {
+    --tilt: 0.9deg;
+    --shift: -4%;
+  }
+  .rv:nth-child(3n) {
+    --tilt: -0.5deg;
+    --shift: 2%;
+  }
+  .rv:nth-child(6n + 4) {
+    --tilt: 1.1deg;
+    --shift: -6%;
+  }
+
+  .rv-card {
+    margin: 0;
+    width: 86%;
+    display: grid;
+    gap: var(--sp-3);
+    transform: translateX(var(--shift, 0)) rotate(var(--tilt, 0deg));
+    transition: transform var(--dur-m) var(--ease-out);
+  }
+  .rv-card:hover {
+    transform: translateX(var(--shift, 0)) rotate(0deg) translateY(-4px);
+  }
+  /* 截图像一张贴在纸上的剪报：浅纸边框 + 细线 */
+  .rv-shot {
+    padding: 8px;
+    background: var(--sheet);
+    outline: 1px solid var(--rule-soft);
+    outline-offset: -1px;
+  }
+  .rv-shot :global(img) {
+    width: 100%;
+    height: auto;
+  }
+  .rv-card figcaption {
+    color: var(--muted);
+    padding-left: 2px;
+  }
+
+  /* 占位：抽象的聊天界面 */
+  .rv-ph {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 18% 8% 8%;
+    background: var(--paper);
+  }
+  .bb {
+    display: block;
+    height: 22px;
+    border-radius: 2px;
+    background: var(--paper-deep);
+  }
+  .bb.r {
+    align-self: flex-end;
+    background: var(--accent-wash);
+    outline: 1px solid color-mix(in oklab, var(--accent) 18%, transparent);
+    outline-offset: -1px;
+  }
+  .rv-ph-label {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 6%;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  /* 手机：横向滑动 */
+  @media (max-width: 767px) {
+    .rv-wall {
+      display: flex;
+      gap: var(--sp-5);
+      margin-inline: calc(var(--gutter) * -1);
+      padding: var(--sp-4) var(--gutter) var(--sp-6);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    .rv-wall::-webkit-scrollbar {
+      display: none;
+    }
+    .rv {
+      flex: 0 0 68%;
+      scroll-snap-align: center;
+      margin-top: 0 !important;
+    }
+    .rv:nth-child(even) {
+      margin-top: var(--sp-6) !important;
+    }
+    .rv-card {
+      width: 100%;
+      transform: rotate(var(--tilt, 0deg));
+    }
+  }
+</style>

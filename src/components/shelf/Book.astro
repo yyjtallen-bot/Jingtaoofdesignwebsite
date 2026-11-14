@@ -1,0 +1,220 @@
+---
+// 一本书 = 书脊 + 封面 + 封底三个面，由书架脚本摆进 3D 空间。
+import Img from '@/components/Img.astro';
+import { getSpineImage } from '@/lib/assets';
+import type { CategoryWithCases } from '@/lib/cases';
+import CoverArt from './CoverArt.astro';
+
+interface Props {
+  category: CategoryWithCases;
+  index: number;
+}
+
+const { category: c, index } = Astro.props;
+const count = String(c.count).padStart(2, '0');
+// 书脊图片：src/assets/spines/<id>.jpg 存在时整面替换生成的书脊
+const spineImage = getSpineImage(c);
+
+// 竖排书脊：1–3 个大写字母（APP、IP、B）直立排，其他拉丁文字（Logo/VI）随竖排旋转
+const escape = (s: string) => s.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
+const spineName = c.name.replace(/[A-Za-z0-9][A-Za-z0-9/&.\-]*/g, (run) =>
+  /^[A-Z0-9]{1,3}$/.test(run) ? `<span class="up">${escape(run)}</span>` : escape(run),
+);
+---
+
+<div
+  class="book"
+  data-i={index}
+  data-binding={c.binding}
+  data-empty={c.count === 0 ? '' : undefined}
+  data-cursor="spine"
+>
+  <div class="face spine">
+    {
+      spineImage ? (
+        <>
+          <Img src={spineImage} alt="" widths={[120, 240]} sizes="80px" class="spine-img" draggable="false" />
+          {/* 读屏和字体子集用：图片上的字看不见，这里保留文字 */}
+          <span class="sr-only">
+            {c.name} {c.count > 0 ? `${c.count} 件` : '整理中'}
+          </span>
+        </>
+      ) : (
+        <>
+          <i class="band band-t" />
+          <span class="sp-no t-mono">{c.no}</span>
+          <i class="sp-rule" />
+          <span class="sp-name t-serif" set:html={spineName} />
+          <span class="sp-foot">
+            {c.count > 0 ? <span class="sp-count t-mono">{count}</span> : <span class="sp-empty">整理中</span>}
+            <i class="sp-mark" />
+          </span>
+          <i class="band band-b" />
+        </>
+      )
+    }
+    <i class="shade"></i>
+  </div>
+
+  <div class="face cover">
+    <CoverArt category={c} eager={index === 0} />
+    <i class="shade"></i>
+  </div>
+
+  <!-- 封底：和封面相对的另一侧。书架右边的书会朝右转，观众看到的就是这一面，缺了它书就是扁的 -->
+  <div class="face back">
+    <i class="shade"></i>
+  </div>
+</div>
+
+<style>
+  .book {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+
+  .face {
+    position: absolute;
+    top: calc(var(--H) / -2);
+    height: var(--H);
+    /* 用 clip 而不是 hidden：hidden 在 Chrome 里会让转了 90° 的封面点不中 */
+    overflow: clip;
+    border-radius: var(--radius-book);
+    background: var(--b-bg);
+    color: var(--b-fg);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    container-type: inline-size;
+  }
+  .face::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border: 1px solid var(--b-edge);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+  .shade {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ── 书脊 ── */
+  .spine {
+    width: var(--ws);
+    left: calc(var(--ws) / -2);
+    transform: translateZ(calc(var(--d) / 2));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* 容器自身不能用 cqw，这里按书脊宽计算 */
+    padding: calc(var(--ws) * 0.15) 0 calc(var(--ws) * 0.16);
+  }
+  .band {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.32;
+  }
+  .band-t {
+    top: 7cqw;
+  }
+  .band-b {
+    bottom: 7cqw;
+  }
+  .sp-no {
+    font-size: 19cqw;
+    line-height: 1;
+    letter-spacing: 0.04em;
+  }
+  .sp-rule {
+    width: 30cqw;
+    height: 1px;
+    margin: 9cqw 0 12cqw;
+    background: currentColor;
+    opacity: 0.5;
+  }
+  .sp-name {
+    flex: 1;
+    min-height: 0;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: 40cqw;
+    line-height: 1;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+  }
+  .sp-name :global(.up) {
+    text-orientation: upright;
+    letter-spacing: 0.02em;
+  }
+  .sp-foot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9cqw;
+  }
+  .sp-count {
+    font-size: 19cqw;
+    line-height: 1;
+  }
+  .sp-empty {
+    writing-mode: vertical-rl;
+    font-size: 17cqw;
+    letter-spacing: 0.24em;
+    opacity: 0.72;
+  }
+  .sp-mark {
+    width: 24cqw;
+    height: 24cqw;
+    background: var(--b-c1);
+  }
+
+  /* 书脊换成图片时：铺满整面 */
+  .spine-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+
+  /* ── 封面 ── */
+  .cover {
+    width: var(--d);
+    left: calc(var(--d) / -2);
+    transform: rotateY(90deg) translateZ(calc(var(--ws) / 2));
+  }
+
+  /* ── 封底：与封面对称，朝 -X，用同一种装帧色（书是一整块硬壳） ── */
+  .back {
+    width: var(--d);
+    left: calc(var(--d) / -2);
+    transform: rotateY(-90deg) translateZ(calc(var(--ws) / 2));
+  }
+  /* 靠书脊一侧的折痕：硬壳书封面和书脊之间的那道凹槽 */
+  .back::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 6cqw;
+    width: 1px;
+    background: currentColor;
+    opacity: 0.22;
+    pointer-events: none;
+  }
+</style>

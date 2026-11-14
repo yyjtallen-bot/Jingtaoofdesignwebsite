@@ -1,0 +1,16 @@
+﻿{
+  "name": "[你的名字]",
+  "nameEn": "[YOUR NAME]",
+  "role": "[UI / 视觉设计师]",
+  "tagline": "设计档案",
+  "title": "[你的名字] · 设计档案",
+  "description": "[一句话介绍：你做什么、服务谁]",
+  "city": "[所在城市]",
+  "careerStart": 2018,
+  "careerEnd": 2026,
+  "wechatId": "[微信号]",
+  "wechatQr": "",
+  "email": "[邮箱]",
+  "ctaLabel": "加微信聊合作",
+  "icp": ""
+}

@@ -1,0 +1,33 @@
+---
+// 分类子页里的一张作品卡片（样式在 src/styles/sheet.css）
+import Img from '@/components/Img.astro';
+import { caseUrl, type Case } from '@/lib/cases';
+
+interface Props {
+  entry: Case;
+}
+const { entry } = Astro.props;
+const d = entry.data;
+---
+
+<li>
+  <a class="cs-card" href={caseUrl(entry)} data-cursor="open" data-cursor-label="查看">
+    <div class="cs-card-media">
+      {
+        d.cover ? (
+          <Img src={d.cover} alt="" widths={[480, 800, 1200]} sizes="(max-width: 767px) 100vw, 33vw" />
+        ) : (
+          <div class="cs-ph">
+            <span class="t-label">[封面]</span>
+          </div>
+        )
+      }
+    </div>
+    <p class="cs-card-meta t-label">
+      <span class="t-mono">{d.year}</span>
+      <span>{d.type}</span>
+    </p>
+    <h3 class="cs-card-title">{d.title}</h3>
+    {d.summary && <p class="cs-card-summary">{d.summary}</p>}
+  </a>
+</li>

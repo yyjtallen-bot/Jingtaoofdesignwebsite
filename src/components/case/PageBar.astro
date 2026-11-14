@@ -1,0 +1,63 @@
+---
+// 子页面顶栏：返回 + 品牌（案例详情页用）
+import { site } from '@/config/site';
+import { withBase } from '@/lib/url';
+
+interface Props {
+  backHref: string;
+  backLabel: string;
+}
+const { backHref, backLabel } = Astro.props;
+---
+
+<div class="pbar">
+  <a class="box t-label pbar-back" href={backHref}>
+    <span aria-hidden="true">←</span>
+    {backLabel}
+  </a>
+  <a class="pbar-brand t-label" href={withBase('/')}>
+    <span>{site.name}</span>
+    <i aria-hidden="true"></i>
+    <span>{site.tagline}</span>
+  </a>
+</div>
+
+<style>
+  .pbar {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-ui);
+    height: var(--topbar-h);
+    padding-inline: var(--gutter);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--sheet);
+    color: var(--accent);
+  }
+  .pbar-back {
+    height: 30px;
+    padding: 0 12px;
+    gap: 10px;
+    color: var(--ink);
+    font-family: var(--font-sans);
+    letter-spacing: 0.16em;
+  }
+  .pbar-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-4);
+    font-family: var(--font-sans);
+    letter-spacing: 0.2em;
+  }
+  .pbar-brand i {
+    width: 40px;
+    height: 1px;
+    background: currentColor;
+  }
+  @media (max-width: 767px) {
+    .pbar-brand {
+      display: none;
+    }
+  }
+</style>

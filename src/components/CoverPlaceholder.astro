@@ -1,0 +1,24 @@
+---
+// 没有封面图时的占位块（第二阶段会换成生成的排版封面）
+interface Props {
+  label?: string;
+  ratio?: string;
+}
+const { label = '[封面]', ratio = '4 / 3' } = Astro.props;
+---
+
+<div class="ph" style={`aspect-ratio:${ratio}`}>
+  <span class="t-label">{label}</span>
+</div>
+
+<style>
+  .ph {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    background: var(--paper-deep);
+    color: var(--muted);
+    outline: var(--hair) solid var(--rule-soft);
+    outline-offset: -1px;
+  }
+</style>

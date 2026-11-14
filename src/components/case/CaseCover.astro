@@ -1,0 +1,48 @@
+---
+// 案例封面：frontmatter 里的 cover；没有时显示占位。点击可放大。
+import Img from '@/components/Img.astro';
+import type { Case } from '@/lib/cases';
+
+interface Props {
+  entry: Case;
+}
+const { entry } = Astro.props;
+const cover = entry.data.cover;
+---
+
+<figure class="cc wrap" data-zoomable>
+  <div class="cc-frame" data-reveal="clip">
+    {
+      cover ? (
+        <Img src={cover} alt={entry.data.title} widths={[800, 1400, 2000]} sizes="(max-width: 1360px) 100vw, 1360px" loading="eager" />
+      ) : (
+        <div class="cc-ph">
+          <span class="t-label">[封面]</span>
+        </div>
+      )
+    }
+  </div>
+</figure>
+
+<style>
+  .cc {
+    margin-block: 0;
+  }
+  .cc-frame {
+    position: relative;
+    overflow: hidden;
+    background: var(--paper-deep);
+  }
+  .cc-frame :global(img) {
+    width: 100%;
+    height: auto;
+  }
+  .cc-ph {
+    aspect-ratio: 16 / 9;
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+    outline: 1px solid var(--rule-soft);
+    outline-offset: -1px;
+  }
+</style>

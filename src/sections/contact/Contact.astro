@@ -1,0 +1,153 @@
+---
+// 「联系」：大字邀请 + 合作需求单 + 微信名片 + 邮箱
+// （文字在 data.ts，需求单在 src/data/brief.ts，联系方式在 site.ts）
+import Section from '@/components/Section.astro';
+import WechatCard from '@/components/contact/WechatCard.astro';
+import Brief from '@/components/contact/Brief.astro';
+import { site } from '@/config/site';
+import { contact as d } from './data';
+
+const lines = d.statement.split('\n');
+const email = site.contact.email;
+// 占位邮箱不生成 mailto 链接
+const isEmail = /^[^\s@\[\]]+@[^\s@\[\]]+$/.test(email);
+---
+
+<Section id="contact" title={d.title} en={d.en}>
+  <p class="ct-statement t-serif">
+    {
+      lines.map((l, i) => (
+        <span class="mask">
+          <span data-reveal style={`--i:${i}`}>
+            {l}
+          </span>
+        </span>
+      ))
+    }
+  </p>
+  <p class="ct-lead">{d.lead}</p>
+
+  <div class="ct-brief">
+    <Brief />
+  </div>
+
+  <div class="ct-grid">
+    <div class="ct-col">
+      <h3 class="ct-k t-label">微信</h3>
+      <WechatCard />
+    </div>
+    <div class="ct-col">
+      <h3 class="ct-k t-label">邮箱</h3>
+      {
+        isEmail ? (
+          <a class="ct-mail t-mono" href={`mailto:${email}`}>
+            {email}
+          </a>
+        ) : (
+          <p class="ct-mail t-mono">{email}</p>
+        )
+      }
+      <dl class="ct-meta">
+        <div>
+          <dt class="t-label">所在城市</dt>
+          <dd>{site.city}</dd>
+        </div>
+        <div>
+          <dt class="t-label">回复时间</dt>
+          <dd>{d.response}</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+</Section>
+
+<style>
+  .ct-statement {
+    display: grid;
+    font-size: clamp(34px, 5vw, 76px);
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    color: var(--accent);
+  }
+  .ct-statement .mask {
+    display: block;
+  }
+  .ct-lead {
+    max-width: 30em;
+    margin-top: var(--sp-6);
+    font-size: var(--fs-lead);
+    color: var(--ink-2);
+  }
+  .ct-brief {
+    margin-top: var(--sp-9);
+  }
+  .ct-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 4fr);
+    gap: var(--sp-8);
+    margin-top: var(--sp-9);
+    padding-top: var(--sp-6);
+    border-top: 1px solid var(--rule);
+  }
+  .ct-k {
+    margin-bottom: var(--sp-5);
+    color: var(--muted);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    letter-spacing: 0.2em;
+  }
+  .ct-mail {
+    position: relative;
+    display: inline-block;
+    font-size: clamp(20px, 2vw, 26px);
+    letter-spacing: 0.02em;
+    padding-bottom: 4px;
+    transition: color var(--dur-s) var(--ease-out);
+  }
+  /* 悬停时下划线从左画到右 */
+  a.ct-mail::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform var(--dur-m) var(--ease-out);
+  }
+  a.ct-mail:hover {
+    color: var(--accent);
+  }
+  a.ct-mail:hover::after {
+    transform: none;
+  }
+  .ct-meta {
+    display: grid;
+    gap: var(--sp-4);
+    margin: var(--sp-7) 0 0;
+  }
+  .ct-meta dt {
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .ct-meta dd {
+    margin: 0;
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 767px) {
+    .ct-lead {
+      font-size: 16px;
+    }
+    .ct-brief {
+      margin-top: var(--sp-8);
+    }
+    .ct-grid {
+      grid-template-columns: 1fr;
+      gap: var(--sp-8);
+      margin-top: var(--sp-8);
+    }
+  }
+</style>

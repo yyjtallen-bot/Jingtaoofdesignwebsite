@@ -1,0 +1,13 @@
+{
+  "title": "客户评价",
+  "en": "Reviews",
+  "lead": "[一句话说明，例如：来自合作客户的真实反馈]",
+  "items": [
+    { "client": "[客户类型]", "project": "[项目]", "image": "" },
+    { "client": "[客户类型]", "project": "[项目]", "image": "" },
+    { "client": "[客户类型]", "project": "[项目]", "image": "" },
+    { "client": "[客户类型]", "project": "[项目]", "image": "" },
+    { "client": "[客户类型]", "project": "[项目]", "image": "" },
+    { "client": "[客户类型]", "project": "[项目]", "image": "" }
+  ]
+}

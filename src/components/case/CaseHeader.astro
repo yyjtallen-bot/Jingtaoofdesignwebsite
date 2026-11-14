@@ -1,0 +1,73 @@
+---
+// 案例页抬头：分类 · 年份 / 标题 / 摘要
+import type { Category } from '@/data/categories';
+import type { Case } from '@/lib/cases';
+
+interface Props {
+  entry: Case;
+  category: Category;
+}
+const { entry, category } = Astro.props;
+const d = entry.data;
+---
+
+<header class="ch wrap">
+  <p class="ch-kicker t-label mask">
+    <span data-reveal>
+      <span class="t-mono">No.{category.no}</span>
+      <span>{category.name}</span>
+      <span class="t-mono">{d.year}</span>
+    </span>
+  </p>
+  <h1 class="ch-title mask"><span data-reveal style="--i:1">{d.title}</span></h1>
+  {
+    d.summary && (
+      <p class="ch-summary mask">
+        <span data-reveal style="--i:2">
+          {d.summary}
+        </span>
+      </p>
+    )
+  }
+</header>
+
+<style>
+  .ch {
+    display: grid;
+    gap: var(--sp-5);
+    padding-top: var(--sp-8);
+    padding-bottom: var(--sp-7);
+  }
+  .ch-kicker {
+    color: var(--accent);
+    font-family: var(--font-sans);
+    letter-spacing: 0.2em;
+  }
+  .ch-kicker > span {
+    display: inline-flex;
+    gap: 14px;
+  }
+  .ch-kicker .t-mono {
+    text-transform: none;
+    letter-spacing: 0.06em;
+  }
+  .ch-title {
+    max-width: 16em;
+    font-size: var(--fs-h1);
+    line-height: 1.12;
+    color: var(--accent);
+  }
+  .ch-summary {
+    max-width: 32em;
+    font-size: var(--fs-lead);
+    color: var(--ink-2);
+  }
+  @media (max-width: 767px) {
+    .ch {
+      padding-top: var(--sp-6);
+    }
+    .ch-summary {
+      font-size: 16px;
+    }
+  }
+</style>

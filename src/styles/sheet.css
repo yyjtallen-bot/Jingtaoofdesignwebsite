@@ -1,0 +1,300 @@
+/* ─────────────────────────────────────────────────────────────
+   分类子页（“从封面长出的那张纸”）
+   首页的浮层和独立的 /work/<分类>/ 页面共用这套样式，
+   所以用全局类名（cs- 前缀），不用组件作用域样式。
+   ───────────────────────────────────────────────────────────── */
+
+/* 首页浮层 */
+/* 外层：那张“纸”。点开时它从封面的位置放大铺满屏幕，它本身就是子页的背景。
+   放大用 transform（显卡处理，页面再忙也不卡），超出纸的内容被裁掉。 */
+.sheet-frame {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-sheet);
+  overflow: hidden;
+  background: var(--sheet);
+  transform-origin: 0 0;
+}
+.sheet-frame[hidden] {
+  display: none;
+}
+/* 内层：子页内容（可滚动）。放大过程中做反向缩放，内容本身保持原大，不会跟着纸被拉伸 */
+.sheet {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  transform-origin: 0 0;
+}
+
+/* 顶栏：关闭 + 品牌 */
+.cs-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  height: var(--topbar-h);
+  padding-inline: var(--gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--sheet);
+  color: var(--accent);
+}
+.cs-close {
+  height: 28px;
+  padding: 0 12px;
+  gap: 10px;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  letter-spacing: 0.2em;
+}
+.cs-close .t-mono {
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.cs-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-4);
+  font-family: var(--font-sans);
+  letter-spacing: 0.2em;
+}
+.cs-brand i {
+  width: 40px;
+  height: 1px;
+  background: currentColor;
+}
+
+/* 首屏：文字 + 主图 */
+.cs-hero {
+  min-height: calc(100svh - var(--topbar-h));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4vw;
+  padding: 2vh 6vw 8vh 7vw;
+}
+.cs-text {
+  display: grid;
+  justify-items: start;
+  gap: 18px;
+  max-width: 560px;
+}
+.cs .mask {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.06em;
+}
+/* :where 让这条规则不抢优先级（.box、.cs-kicker 自己的 display 生效） */
+:where(.cs [data-rise]) {
+  display: inline-block;
+}
+.cs-kicker {
+  display: inline-flex;
+  gap: 14px;
+  color: var(--accent);
+  letter-spacing: 0.2em;
+}
+.cs-kicker .t-mono {
+  text-transform: none;
+  letter-spacing: 0.08em;
+}
+.cs-title {
+  font-size: clamp(44px, 6vw, 96px);
+  line-height: 1.06;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+}
+.cs-meta {
+  font-size: var(--fs-sm);
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+}
+.cs-intro {
+  max-width: 26em;
+  font-size: 17px;
+  line-height: 1.9;
+  color: var(--ink-2);
+}
+.cs-jump {
+  height: 44px;
+  margin-top: 8px;
+  padding: 0 18px;
+  gap: 12px;
+  color: var(--accent);
+  border-color: var(--accent);
+  font-family: var(--font-sans);
+  letter-spacing: 0.2em;
+}
+.cs-visual {
+  position: relative;
+  height: min(76svh, 760px);
+  aspect-ratio: 5 / 7;
+  margin: 0;
+}
+.ink-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* 作品网格 */
+.cs-works {
+  padding: var(--sp-8) 6vw var(--sp-10) 7vw;
+}
+.cs-works-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 14px;
+  margin-bottom: var(--sp-7);
+  border-bottom: 1px solid var(--rule);
+  color: var(--accent);
+}
+.cs-works-head h2 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+}
+.cs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: var(--sp-8) var(--sp-6);
+}
+.cs-card {
+  display: grid;
+  gap: 12px;
+}
+.cs-card-media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--paper-deep);
+}
+.cs-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--dur-l) var(--ease-out);
+}
+.cs-card:hover .cs-card-media img {
+  transform: scale(1.03);
+}
+.cs-ph {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  outline: 1px solid var(--rule-soft);
+  outline-offset: -1px;
+}
+.cs-card-meta {
+  display: flex;
+  gap: 16px;
+  margin-top: 6px;
+  color: var(--muted);
+}
+.cs-card-title {
+  font-size: var(--fs-h4);
+  transition: color var(--dur-s) var(--ease-out);
+}
+.cs-card:hover .cs-card-title {
+  color: var(--accent);
+}
+.cs-card-summary {
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+
+/* 还没有作品：说明 + 微信名片 + 三个空位 */
+.cs-empty {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--sp-7) var(--sp-8);
+  align-items: end;
+}
+.cs-empty-title {
+  font-size: var(--fs-h2);
+  line-height: 1.15;
+  color: var(--accent);
+}
+.cs-empty-text {
+  max-width: 26em;
+  margin-top: var(--sp-4);
+  color: var(--ink-2);
+}
+.cs-ghosts {
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: var(--sp-5);
+}
+.cs-ghost {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  outline: 1px dashed var(--rule-soft);
+  outline-offset: -1px;
+  /* 淡淡的网点铺底，和全站的半调语言一致 */
+  background-image: radial-gradient(circle, var(--rule-soft) 0 30%, transparent 34%);
+  background-size: 7px 7px;
+}
+.cs-ghost .t-mono {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  font-size: var(--fs-label);
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* 独立页面：脚本就绪前先把要升起的文字和主图藏好，避免闪一下 */
+.cs-page:not(.is-ready) [data-rise] {
+  transform: translateY(110%);
+}
+.cs-page:not(.is-ready) [data-ink] > * {
+  visibility: hidden;
+}
+
+@media (max-width: 767px) {
+  .cs-hero {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 28px;
+    min-height: 0;
+    padding: 8px var(--gutter) 48px;
+  }
+  .cs-visual {
+    order: -1;
+    justify-self: center;
+    height: 46svh;
+  }
+  .cs-title {
+    font-size: 42px;
+  }
+  .cs-intro {
+    font-size: 16px;
+  }
+  .cs-works {
+    padding: 40px var(--gutter) 96px;
+  }
+  .cs-empty {
+    grid-template-columns: 1fr;
+    gap: var(--sp-6);
+  }
+  .cs-ghosts {
+    grid-template-columns: 1fr;
+    margin-top: 0;
+  }
+  /* 手机上只留一个空位，免得一屏全是空框 */
+  .cs-ghost + .cs-ghost {
+    display: none;
+  }
+  .cs-brand i {
+    width: 22px;
+  }
+}

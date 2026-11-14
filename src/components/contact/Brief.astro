@@ -1,0 +1,287 @@
+---
+// 合作需求单：勾选服务 / 预算 / 时间，填一句话 → 实时预览 → 复制，粘贴到微信发给你。
+// 不需要服务器，不经过任何第三方。文字和选项在 src/data/brief.ts。
+import { brief as d } from '@/data/brief';
+import { services } from '@/sections/services/data';
+
+const serviceOptions = [...services.items.map((s) => s.name), ...d.extraServices];
+const groups = [
+  { key: 'services', label: d.servicesLabel, options: serviceOptions, multi: true },
+  { key: 'budget', label: d.budgetLabel, options: d.budgets, multi: false },
+  { key: 'time', label: d.timeLabel, options: d.timelines, multi: false },
+];
+---
+
+<form
+  class="bf"
+  id="brief"
+  data-brief
+  aria-labelledby="brief-title"
+  data-heading={d.heading}
+  data-empty={d.emptyValue}
+  data-copied={d.copied}
+  data-failed={d.failed}
+  data-glyphs={`${d.copied}${d.failed}称呼想做预算时间需求：（）、`}
+>
+  <div class="bf-head">
+    <h3 id="brief-title" class="bf-title">{d.title}</h3>
+    <p class="bf-lead">{d.lead}</p>
+  </div>
+
+  <div class="bf-body">
+    <div class="bf-fields">
+      {
+        groups.map((g) => (
+          <fieldset class="bf-group" data-key={g.key} data-multi={g.multi ? '' : undefined}>
+            <legend class="t-label bf-legend">{g.label}</legend>
+            <div class="bf-chips">
+              {g.options.map((o) => (
+                <button type="button" class="box bf-chip" aria-pressed="false" data-value={o}>
+                  {o}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        ))
+      }
+      <label class="bf-field">
+        <span class="t-label bf-legend">{d.noteLabel}</span>
+        <textarea rows="2" data-key="note" placeholder={d.notePlaceholder} maxlength="300"></textarea>
+      </label>
+      <label class="bf-field">
+        <span class="t-label bf-legend">{d.nameLabel}</span>
+        <input type="text" data-key="name" placeholder={d.namePlaceholder} maxlength="60" />
+      </label>
+    </div>
+
+    <div class="bf-out">
+      <p class="t-label bf-legend">{d.previewLabel}</p>
+      <pre class="bf-preview" data-preview></pre>
+      <button type="submit" class="box bf-send">{d.button}</button>
+      <p class="bf-status" data-status aria-live="polite"></p>
+      <a class="box bf-open" href="weixin://" data-open hidden>{d.openWechat}</a>
+    </div>
+  </div>
+</form>
+
+<script>
+  import { writeText } from '@/scripts/copy';
+
+  document.querySelectorAll<HTMLFormElement>('[data-brief]').forEach((form) => {
+    const preview = form.querySelector<HTMLElement>('[data-preview]')!;
+    const status = form.querySelector<HTMLElement>('[data-status]')!;
+    const openLink = form.querySelector<HTMLAnchorElement>('[data-open]')!;
+    const empty = form.dataset.empty ?? '';
+    const isMobile = () => matchMedia('(max-width: 767px)').matches;
+
+    const picked = (key: string) =>
+      [...form.querySelectorAll<HTMLElement>(`[data-key="${key}"] [aria-pressed="true"]`)].map((b) => b.dataset.value!);
+    const field = (key: string) =>
+      form.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[data-key="${key}"]`)!.value.trim();
+
+    function compose() {
+      const name = field('name');
+      const note = field('note');
+      const lines = [form.dataset.heading ?? ''];
+      if (name) lines.push(`称呼：${name}`);
+      lines.push(`想做：${picked('services').join('、') || empty}`);
+      lines.push(`预算：${picked('budget')[0] || empty}`);
+      lines.push(`时间：${picked('time')[0] || empty}`);
+      if (note) lines.push(`需求：${note}`);
+      return lines.join('\n');
+    }
+    const update = () => {
+      preview.textContent = compose();
+      status.textContent = '';
+    };
+
+    // 选项：多选组可以选多个；单选组再点一次可以取消
+    form.querySelectorAll<HTMLElement>('.bf-group').forEach((group) => {
+      const multi = group.hasAttribute('data-multi');
+      group.addEventListener('click', (e) => {
+        const chip = (e.target as Element).closest<HTMLButtonElement>('.bf-chip');
+        if (!chip) return;
+        const on = chip.getAttribute('aria-pressed') !== 'true';
+        if (!multi) group.querySelectorAll('.bf-chip').forEach((c) => c.setAttribute('aria-pressed', 'false'));
+        chip.setAttribute('aria-pressed', String(on));
+        update();
+      });
+    });
+    form.addEventListener('input', update);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const ok = await writeText(compose());
+      status.textContent = ok ? (form.dataset.copied ?? '') : (form.dataset.failed ?? '');
+      form.classList.toggle('is-copied', ok);
+      // 手机上复制成功后，给一个“打开微信”的按钮
+      openLink.hidden = !(ok && isMobile());
+    });
+
+    update();
+  });
+</script>
+
+<style>
+  .bf {
+    padding-top: var(--sp-6);
+    border-top: 1px solid var(--rule);
+    scroll-margin-top: var(--sp-6);
+  }
+  .bf-head {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 4fr);
+    gap: var(--sp-8);
+    align-items: baseline;
+    margin-bottom: var(--sp-7);
+  }
+  .bf-title {
+    font-size: var(--fs-h3);
+    color: var(--accent);
+  }
+  .bf-lead {
+    color: var(--ink-2);
+    font-size: var(--fs-sm);
+  }
+
+  .bf-body {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 4fr);
+    gap: var(--sp-8);
+    align-items: start;
+  }
+  .bf-fields {
+    display: grid;
+    gap: var(--sp-6);
+  }
+  .bf-group {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+  .bf-legend {
+    display: block;
+    margin-bottom: var(--sp-3);
+    padding: 0;
+    color: var(--muted);
+    font-family: var(--font-sans);
+    letter-spacing: 0.16em;
+  }
+  .bf-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  /* 选项：直角线框，选中后填主色 */
+  .bf-chip {
+    height: 34px;
+    padding: 0 12px;
+    font-size: var(--fs-sm);
+    color: var(--ink);
+    border-color: var(--rule-soft);
+    background: transparent;
+    transition:
+      background-color var(--dur-s) var(--ease-out),
+      color var(--dur-s) var(--ease-out),
+      border-color var(--dur-s) var(--ease-out);
+  }
+  .bf-chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .bf-chip[aria-pressed='true'] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+  }
+
+  /* 输入框：只有一条下划线 */
+  .bf-field {
+    display: grid;
+  }
+  .bf-field textarea,
+  .bf-field input {
+    width: 100%;
+    padding: 6px 0 8px;
+    border: 0;
+    border-bottom: 1px solid var(--rule-soft);
+    border-radius: 0;
+    background: transparent;
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: var(--fs-base);
+    line-height: 1.7;
+    resize: vertical;
+    transition: border-color var(--dur-s) var(--ease-out);
+  }
+  .bf-field textarea:focus,
+  .bf-field input:focus {
+    outline: none;
+    border-bottom-color: var(--accent);
+  }
+  .bf-field ::placeholder {
+    color: var(--muted);
+    opacity: 0.8;
+  }
+
+  /* 右侧：将要发出的内容 */
+  .bf-out {
+    position: sticky;
+    top: var(--sp-7);
+    display: grid;
+    gap: var(--sp-3);
+  }
+  .bf-preview {
+    margin: 0;
+    min-height: 9em;
+    padding: var(--sp-4) var(--sp-5);
+    background: var(--accent-wash);
+    border-left: 2px solid var(--accent);
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    line-height: 1.9;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--ink);
+  }
+  .bf-send {
+    height: 44px;
+    justify-content: center;
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+    font-size: var(--fs-sm);
+    letter-spacing: 0.12em;
+  }
+  .bf-status {
+    min-height: 1.5em;
+    font-size: var(--fs-sm);
+    color: var(--accent);
+  }
+  .bf-open {
+    height: 40px;
+    justify-content: center;
+    color: var(--accent);
+    border-color: var(--accent);
+    font-size: var(--fs-sm);
+    letter-spacing: 0.12em;
+  }
+  .bf-open[hidden] {
+    display: none;
+  }
+
+  @media (max-width: 767px) {
+    .bf-head,
+    .bf-body {
+      grid-template-columns: 1fr;
+      gap: var(--sp-4);
+    }
+    .bf-body {
+      gap: var(--sp-6);
+    }
+    .bf-out {
+      position: static;
+    }
+  }
+</style>

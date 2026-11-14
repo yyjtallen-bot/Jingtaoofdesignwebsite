@@ -1,0 +1,145 @@
+---
+// 封面画面：书架上的封面、分类子页的主图共用。
+// 有 src/assets/covers/<id>.* 就用图片，否则用生成的排版海报（统一版式）。
+// 尺寸随容器变化（内部用 cqw），父元素需要定位并给出宽高。
+import Img from '@/components/Img.astro';
+import { site } from '@/config/site';
+import { getCoverImage } from '@/lib/assets';
+import type { CategoryWithCases } from '@/lib/cases';
+import { fallbackMotif, motifs } from './motifs';
+
+interface Props {
+  category: CategoryWithCases;
+  /** 封面图的响应式宽度与 sizes */
+  widths?: number[];
+  sizes?: string;
+  eager?: boolean;
+}
+
+const { category: c, widths = [360, 720], sizes = '(max-width: 767px) 50vw, 26vw', eager = false } = Astro.props;
+const image = getCoverImage(c);
+const count = String(c.count).padStart(2, '0');
+// 网点图案定义在 HalftoneDefs.astro（每种装帧一份）
+const motif = (motifs[c.id] ?? fallbackMotif)(`url(#ht-${c.binding})`);
+
+// 大标题按字宽估算字号，保证单行放得下
+const em = [...c.name].reduce((w, ch) => {
+  if (/\s/.test(ch)) return w + 0.3;
+  if (/[A-Z]/.test(ch)) return w + 0.66;
+  if (/[a-z0-9]/.test(ch)) return w + 0.54;
+  if (/[\x21-\x7e]/.test(ch)) return w + 0.42;
+  return w + 1;
+}, 0);
+const titleSize = `${Math.min(16, 84 / em).toFixed(2)}cqw`;
+---
+
+<div class="cover-art" data-binding={c.binding}>
+  {
+    image ? (
+      <Img
+        src={image}
+        alt=""
+        widths={widths}
+        sizes={sizes}
+        class="cover-img"
+        draggable="false"
+        loading={eager ? 'eager' : 'lazy'}
+      />
+    ) : (
+      <div class="art">
+        <p class="art-top">
+          <span class="t-mono">No.{c.no}</span>
+          <span>{site.tagline}</span>
+        </p>
+        <p class="art-title t-serif" style={`--fit:${titleSize}`}>
+          {c.name}
+        </p>
+        <p class="art-en t-mono">{c.en}</p>
+        <svg class="art-motif" viewBox="0 0 100 100" aria-hidden="true">
+          <g set:html={motif} />
+        </svg>
+        <p class="art-foot">
+          <span>{site.name}</span>
+          {c.count > 0 ? <span class="t-mono">{count} 件</span> : <span>整理中</span>}
+        </p>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .cover-art {
+    position: absolute;
+    inset: 0;
+    container-type: inline-size;
+    background: var(--b-bg);
+    color: var(--b-fg);
+  }
+  .cover-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+  .art {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+    padding: 7cqw 7cqw 6.5cqw;
+  }
+  .art p {
+    margin: 0;
+  }
+  .art-top,
+  .art-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 3.3cqw;
+    line-height: 1;
+    letter-spacing: 0.16em;
+  }
+  .art-top {
+    padding-bottom: 3.2cqw;
+    border-bottom: 1px solid color-mix(in oklab, currentColor 40%, transparent);
+  }
+  .art-foot {
+    padding-top: 3.2cqw;
+    border-top: 1px solid color-mix(in oklab, currentColor 40%, transparent);
+  }
+  .art-title {
+    margin-top: 8cqw;
+    font-size: var(--fit);
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .art-en {
+    margin-top: 3.4cqw;
+    font-size: 3.2cqw;
+    line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+  .art-motif {
+    align-self: center;
+    justify-self: start;
+    width: auto;
+    height: min(100%, 72cqw);
+    aspect-ratio: 1;
+    margin: 5cqw 0;
+  }
+  .art-motif :global(.s) {
+    fill: var(--b-c1);
+  }
+  .art-motif :global(.l) {
+    fill: none;
+    stroke: var(--b-fg);
+    stroke-width: 0.7;
+  }
+</style>

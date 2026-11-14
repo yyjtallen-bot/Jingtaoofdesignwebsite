@@ -1,0 +1,45 @@
+{
+  "title": "服务",
+  "en": "Services",
+  "lead": "[一句话说明你能提供什么]",
+  "exclusive": true,
+  "items": [
+    {
+      "icon": "interface",
+      "name": "[服务名称一]",
+      "summary": "[一句话说明这项服务]",
+      "includes": ["[包含内容]", "[包含内容]", "[包含内容]"],
+      "deliverables": ["[交付物]", "[交付物]"],
+      "period": "[周期]",
+      "price": "[参考价格]"
+    },
+    {
+      "icon": "web",
+      "name": "[服务名称二]",
+      "summary": "[一句话说明这项服务]",
+      "includes": ["[包含内容]", "[包含内容]", "[包含内容]"],
+      "deliverables": ["[交付物]", "[交付物]"],
+      "period": "[周期]",
+      "price": "[参考价格]"
+    },
+    {
+      "icon": "brand",
+      "name": "[服务名称三]",
+      "summary": "[一句话说明这项服务]",
+      "includes": ["[包含内容]", "[包含内容]", "[包含内容]"],
+      "deliverables": ["[交付物]", "[交付物]"],
+      "period": "[周期]",
+      "price": "[参考价格]"
+    },
+    {
+      "icon": "partner",
+      "name": "[服务名称四]",
+      "summary": "[一句话说明这项服务]",
+      "includes": ["[包含内容]", "[包含内容]", "[包含内容]"],
+      "deliverables": ["[交付物]", "[交付物]"],
+      "period": "[周期]",
+      "price": "[参考价格]"
+    }
+  ],
+  "note": "[价格说明，例如：按需求评估报价]"
+}

@@ -1,0 +1,155 @@
+---
+// 微信名片：二维码 + 微信号 + 复制按钮（+ 手机上“打开微信”）。
+// 联系板块和手机底部弹出层共用这一个组件。
+// 二维码图片放 src/assets/wechat-qr.png（jpg / webp 也行），没有时显示占位。
+import Img from '@/components/Img.astro';
+import { site } from '@/config/site';
+import { getWechatQr } from '@/lib/assets';
+
+interface Props {
+  /** compact：手机弹出层里用，二维码小一些 */
+  compact?: boolean;
+}
+const { compact = false } = Astro.props;
+const qr = getWechatQr(site.contact.wechatQr);
+const id = site.contact.wechatId;
+---
+
+<div class:list={['wx', { compact }]}>
+  <figure class="wx-qr">
+    {
+      qr ? (
+        <Img src={qr} alt={`微信二维码：${id}`} widths={[240, 480]} sizes="240px" />
+      ) : (
+        <div class="wx-qr-ph" role="img" aria-label="微信二维码占位">
+          <span class="t-label">[微信二维码]</span>
+        </div>
+      )
+    }
+    <figcaption class="t-label">扫码或长按识别</figcaption>
+  </figure>
+
+  <div class="wx-info">
+    <p class="wx-k t-label">微信号</p>
+    <p class="wx-id t-mono">{id}</p>
+    <div class="wx-actions">
+      <button class="box wx-copy" type="button" data-copy={id}>
+        <span class="copy-mask">
+          <span class="copy-a">复制微信号</span>
+          <span class="copy-b" aria-hidden="true">已复制</span>
+        </span>
+        <span class="sr-only" aria-live="polite" data-copy-status></span>
+      </button>
+      <a class="box wx-open" href="weixin://">打开微信</a>
+    </div>
+  </div>
+</div>
+
+<style>
+  .wx {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--sp-6);
+    align-items: end;
+  }
+  .wx-qr {
+    margin: 0;
+    display: grid;
+    gap: 10px;
+  }
+  .wx-qr :global(img),
+  .wx-qr-ph {
+    width: 168px;
+    height: 168px;
+    object-fit: contain;
+    background: var(--sheet);
+    outline: 1px solid var(--rule-soft);
+    outline-offset: -1px;
+  }
+  .wx-qr-ph {
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+    /* 占位用网点铺底，提示这里放二维码 */
+    background-image: radial-gradient(circle, var(--rule-soft) 0 32%, transparent 36%);
+    background-size: 6px 6px;
+  }
+  .wx-qr figcaption {
+    color: var(--muted);
+  }
+  .wx-info {
+    display: grid;
+    justify-items: start;
+    gap: 10px;
+  }
+  .wx-k {
+    color: var(--muted);
+  }
+  .wx-id {
+    font-size: clamp(20px, 2vw, 26px);
+    letter-spacing: 0.04em;
+    user-select: all;
+  }
+  .wx-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .wx-actions .box {
+    height: 40px;
+    padding: 0 16px;
+    font-size: var(--fs-sm);
+    letter-spacing: 0.16em;
+  }
+  .wx-copy {
+    background: var(--accent);
+    color: var(--on-accent);
+    border-color: var(--accent);
+  }
+  /* 复制成功：两层文字遮罩切换 */
+  .copy-mask {
+    display: grid;
+    overflow: hidden;
+  }
+  .copy-a,
+  .copy-b {
+    grid-area: 1 / 1;
+    transition: transform var(--dur-s) var(--ease-out);
+  }
+  .copy-b {
+    transform: translateY(110%);
+  }
+  .wx-copy:global(.is-copied) .copy-a {
+    transform: translateY(-110%);
+  }
+  .wx-copy:global(.is-copied) .copy-b {
+    transform: none;
+  }
+  /* “打开微信”只在手机上有意义 */
+  .wx-open {
+    display: none;
+  }
+
+  .compact {
+    grid-template-columns: auto 1fr;
+    gap: var(--sp-5);
+    align-items: center;
+  }
+  .compact .wx-qr :global(img),
+  .compact .wx-qr-ph {
+    width: 124px;
+    height: 124px;
+  }
+
+  @media (max-width: 767px) {
+    .wx-open {
+      display: inline-flex;
+      align-items: center;
+    }
+    .wx:not(.compact) {
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+  }
+</style>

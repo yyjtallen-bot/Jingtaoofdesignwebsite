@@ -1,0 +1,115 @@
+---
+// 图片放大（全站共用）：给容器加 data-zoomable，里面的图片点击即可放大。
+// 用在：案例封面、案例正文、客户评价截图。
+---
+
+<dialog class="lb" aria-label="图片预览" data-lightbox data-glyphs="放大">
+  <div class="lb-stage" data-lb-close-area>
+    <img class="lb-img" alt="" decoding="async" />
+  </div>
+  <div class="lb-foot">
+    <p class="lb-cap"></p>
+    <div class="lb-ui">
+      <span class="lb-count t-mono"></span>
+      <button class="box t-label lb-prev" type="button" aria-label="上一张">←</button>
+      <button class="box t-label lb-next" type="button" aria-label="下一张">→</button>
+      <button class="box t-label lb-close" type="button">关闭 <span class="t-mono">ESC</span></button>
+    </div>
+  </div>
+  <div class="grain" aria-hidden="true"></div>
+</dialog>
+
+<script>
+  import { initLightbox } from '@/scripts/lightbox';
+  initLightbox();
+</script>
+
+<style>
+  .lb {
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: var(--sheet);
+    color: var(--ink);
+    overflow: hidden;
+  }
+  .lb[open] {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+  .lb::backdrop {
+    background: transparent;
+  }
+  .lb-stage {
+    display: grid;
+    place-items: center;
+    padding: var(--sp-7) var(--gutter) var(--sp-4);
+    min-height: 0;
+  }
+  .lb-img {
+    max-width: min(100%, 1600px);
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    transform-origin: center center;
+  }
+  .lb-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-5);
+    padding: var(--sp-4) var(--gutter) var(--sp-5);
+  }
+  .lb-cap {
+    font-size: var(--fs-sm);
+    color: var(--muted);
+  }
+  .lb-ui {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .lb-count {
+    margin-right: var(--sp-3);
+    font-size: var(--fs-sm);
+    color: var(--muted);
+  }
+  .lb-ui .box {
+    height: 32px;
+    min-width: 32px;
+    justify-content: center;
+    padding: 0 10px;
+    font-family: var(--font-sans);
+    letter-spacing: 0.12em;
+  }
+  .lb-close .t-mono {
+    margin-left: 6px;
+    color: var(--muted);
+  }
+  .lb:global(.single) .lb-prev,
+  .lb:global(.single) .lb-next {
+    display: none;
+  }
+  @media (max-width: 767px) {
+    .lb-foot {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .lb-ui {
+      justify-content: flex-end;
+    }
+    /* 手指点按的尺寸 */
+    .lb-ui .box {
+      height: 40px;
+      min-width: 40px;
+    }
+    .lb-close .t-mono {
+      display: none;
+    }
+  }
+</style>

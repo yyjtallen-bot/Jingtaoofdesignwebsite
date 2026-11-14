@@ -1,0 +1,62 @@
+---
+// 分类子页（独立页面）。从首页点开封面时，看到的是同一份内容在浮层里“从封面长出”。
+// 12 个分类都生成页面；还没有作品的分类显示“整理中”。
+import '@/styles/sheet.css';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import HalftoneDefs from '@/components/shelf/HalftoneDefs.astro';
+import CategorySheet from '@/components/sheet/CategorySheet.astro';
+import { site } from '@/config/site';
+import { getCategoriesWithCases, type CategoryWithCases } from '@/lib/cases';
+import { withBase } from '@/lib/url';
+
+export async function getStaticPaths() {
+  const all = await getCategoriesWithCases();
+  return all.map((c) => ({ params: { category: c.id }, props: { category: c } }));
+}
+
+const { category } = Astro.props as { category: CategoryWithCases };
+// 关闭：回到首页，书架停在这个分类
+const closeHref = withBase(`/?shelf=${category.id}`);
+---
+
+<BaseLayout title={category.name} description={category.intro} surface="sheet">
+  <HalftoneDefs />
+  <div class="cs-page" id="main" data-close-href={closeHref}>
+    <div class="cs-bar">
+      <a class="box t-label cs-close" href={closeHref}>关闭 <span class="t-mono">ESC</span></a>
+      <a class="cs-brand t-label" href={withBase('/')}>
+        <span>{site.name}</span>
+        <i aria-hidden="true"></i>
+        <span>{site.tagline}</span>
+      </a>
+    </div>
+    <CategorySheet category={category} />
+  </div>
+</BaseLayout>
+
+<noscript>
+  <style>
+    .cs-page [data-rise] {
+      transform: none !important;
+    }
+    .cs-page [data-ink] > * {
+      visibility: visible !important;
+    }
+  </style>
+</noscript>
+
+<script>
+  import { inkReveal, rise } from '@/scripts/sheet/reveal';
+
+  const page = document.querySelector<HTMLElement>('.cs-page');
+  if (page) {
+    rise(page, 120);
+    const visual = page.querySelector<HTMLElement>('[data-ink]');
+    if (visual) inkReveal(visual, 60);
+    page.classList.add('is-ready');
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && page.dataset.closeHref) location.href = page.dataset.closeHref;
+    });
+  }
+</script>

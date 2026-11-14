@@ -1,0 +1,126 @@
+---
+// 自定义光标（仅鼠标设备）。
+// 状态由悬停元素的 data-cursor 决定：open（可翻开）/ empty（整理中）/ spine（书脊）/ btn（按钮、链接）。
+// 标签文字取 data-cursor-label。
+---
+
+<div class="cursor" aria-hidden="true" data-glyphs="翻开整理中">
+  <i class="ring"></i>
+  <i class="dot"></i>
+  <span class="label"><span class="label-text"></span></span>
+</div>
+
+<script>
+  import { initCursor } from '@/scripts/cursor';
+  initCursor();
+</script>
+
+<style is:global>
+  html.has-cursor,
+  html.has-cursor * {
+    cursor: none !important;
+  }
+</style>
+
+<style>
+  .cursor {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: var(--z-cursor);
+    width: 56px;
+    height: 56px;
+    margin: -28px 0 0 -28px;
+    pointer-events: none;
+    visibility: hidden;
+    color: var(--ink);
+  }
+  .cursor.is-on {
+    visibility: visible;
+  }
+  .ring {
+    position: absolute;
+    inset: 0;
+    border: 1.5px solid currentColor;
+    border-radius: 50%;
+    background: transparent;
+    transform: scale(0.42);
+    transition:
+      transform 0.5s var(--ease-out),
+      background-color 0.4s var(--ease-out),
+      border-color 0.4s var(--ease-out);
+  }
+  .dot {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 5px;
+    height: 5px;
+    margin: -2.5px 0 0 -2.5px;
+    border-radius: 50%;
+    background: currentColor;
+    transition: transform 0.4s var(--ease-out);
+  }
+  .label {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border-radius: 50%;
+  }
+  .label-text {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    padding-left: 0.2em;
+    line-height: 1;
+    /* 藏在圆形遮罩下方之外（3em ≈ 36px，超出 56px 光标框的下沿） */
+    transform: translateY(3em);
+    transition: transform 0.45s var(--ease-out);
+  }
+
+  /* 书脊 */
+  .cursor[data-state='spine'] .ring {
+    transform: scale(0.72);
+  }
+  /* 按钮、链接 */
+  .cursor[data-state='btn'] .ring {
+    transform: scale(0.55);
+  }
+  .cursor[data-state='btn'] .dot {
+    transform: scale(0);
+  }
+  /* 可翻开的封面 */
+  .cursor[data-state='open'] .ring {
+    transform: scale(1.75);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .cursor[data-state='open'] .dot,
+  .cursor[data-state='empty'] .dot {
+    transform: scale(0);
+  }
+  .cursor[data-state='open'] .label-text {
+    color: var(--on-accent);
+    transform: none;
+  }
+  /* 整理中的封面 */
+  .cursor[data-state='empty'] .ring {
+    transform: scale(1.75);
+    background: var(--paper);
+  }
+  .cursor[data-state='empty'] .label-text {
+    color: var(--ink);
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ring,
+    .dot,
+    .label-text {
+      transition-duration: 1ms;
+    }
+  }
+</style>

@@ -1,0 +1,29 @@
+---
+// 封面网点图案：每种装帧一份，全页共用（url(#ht-bone) 等）。
+// 不能放进书本里——远处的书会被隐藏，图案也会跟着不显示。
+const bindings = ['bone', 'kraft', 'ink', 'accent'];
+---
+
+<svg class="ht-defs" aria-hidden="true" focusable="false">
+  {
+    bindings.map((b) => (
+      <g data-binding={b}>
+        <pattern id={`ht-${b}`} width="2.6" height="2.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <circle cx="1.3" cy="1.3" r="0.82" />
+        </pattern>
+      </g>
+    ))
+  }
+</svg>
+
+<style>
+  .ht-defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+  .ht-defs circle {
+    fill: var(--b-c2);
+  }
+</style>

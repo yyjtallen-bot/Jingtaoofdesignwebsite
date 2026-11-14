@@ -1,0 +1,44 @@
+---
+// 首页的子页浮层：平时隐藏，点开封面时从封面长出。
+// 12 个子页的内容在首页就备好（<template> 里，不显示、不加载图片），
+// 点开时直接填进来，动画节奏不会被读取文件拖慢。内容和 /work/<分类>/ 页面是同一个组件。
+import '@/styles/sheet.css';
+import { site } from '@/config/site';
+import type { CategoryWithCases } from '@/lib/cases';
+import CategorySheet from './CategorySheet.astro';
+
+interface Props {
+  items: CategoryWithCases[];
+}
+const { items } = Astro.props;
+---
+
+<div class="sheet-frame" hidden data-sheet-frame>
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="作品分类" data-sheet>
+    <div class="cs-bar">
+      <button class="box t-label cs-close" type="button" data-sheet-close>关闭 <span class="t-mono">ESC</span></button>
+      <span class="cs-brand t-label">
+        <span>{site.name}</span>
+        <i aria-hidden="true"></i>
+        <span>{site.tagline}</span>
+      </span>
+    </div>
+    <div data-sheet-body></div>
+  </div>
+</div>
+
+{
+  items.map((c) => (
+    <template data-sheet-for={c.id} data-sheet-title={`${c.name} · ${site.name}`}>
+      <CategorySheet category={c} />
+    </template>
+  ))
+}
+
+<script>
+  import { initSheet } from '@/scripts/sheet/overlay';
+
+  const sheet = document.querySelector<HTMLElement>('[data-sheet]');
+  const shelf = document.querySelector<HTMLElement>('[data-shelf]');
+  if (sheet && shelf) initSheet(shelf, sheet);
+</script>

@@ -1,0 +1,34 @@
+---
+// 首页 = 书架 + 各板块。
+// 每个板块是 src/sections/ 下的一个独立文件夹：文字在 data.ts，样式和交互在 .astro。
+// 调整顺序、去掉某个板块：改下面 <main> 里的顺序 / 删一行即可，编号会自动跟着变。
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Topbar from '@/components/Topbar.astro';
+import SiteFooter from '@/components/SiteFooter.astro';
+import Shelf from '@/components/shelf/Shelf.astro';
+import SheetOverlay from '@/components/sheet/SheetOverlay.astro';
+import Services from '@/sections/services/Services.astro';
+import Process from '@/sections/process/Process.astro';
+import About from '@/sections/about/About.astro';
+import Reviews from '@/sections/reviews/Reviews.astro';
+import Contact from '@/sections/contact/Contact.astro';
+import { getCategoriesWithCases } from '@/lib/cases';
+
+const shelf = await getCategoriesWithCases();
+---
+
+<BaseLayout>
+  <Topbar overlay />
+
+  <main id="main">
+    <Shelf items={shelf} />
+    <Services />
+    <Process />
+    <About />
+    <Reviews />
+    <Contact />
+    <SiteFooter />
+  </main>
+
+  <SheetOverlay items={shelf} />
+</BaseLayout>

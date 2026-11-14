@@ -1,0 +1,925 @@
+# 网页后台（Sveltia CMS）的设置：左侧每一栏对应网站的一块内容。
+# 后台改的是 GitHub 仓库里的文件，保存后 GitHub 会自动重新打包、更新网站（约 1–2 分钟）。
+
+backend:
+  name: github
+  repo: yyjtallen-bot/Jingtaoofdesignwebsite
+  branch: main
+site_url: https://yyjtallen-bot.github.io/Jingtaoofdesignwebsite/
+display_url: https://yyjtallen-bot.github.io/Jingtaoofdesignwebsite/
+media_folder: src/assets/uploads
+public_folder: /src/assets/uploads
+collections:
+  - name: cases
+    label: 案例
+    label_singular: 案例
+    folder: src/content/cases
+    path: "{{slug}}/index"
+    slug: "{{fields.slug}}"
+    identifier_field: title
+    summary: "{{title}}（{{category}} · {{year}}）"
+    create: true
+    delete: true
+    media_folder: images
+    public_folder: ./images
+    fields:
+      - name: title
+        label: 案例标题
+        widget: string
+      - name: slug
+        label: 网址名（英文小写、用短横线连接，如 tea-brand-app；保存后不要再改）
+        widget: string
+        pattern:
+          - ^[a-z0-9]+(-[a-z0-9]+)*$
+          - 只能用英文小写字母、数字和短横线
+      - name: category
+        label: 所属分类（书架上的哪本书）
+        widget: select
+        options:
+          - label: 01 APP 界面
+            value: app
+          - label: 02 网页设计
+            value: web
+          - label: 03 小程序
+            value: miniapp
+          - label: 04 B 端后台
+            value: admin
+          - label: 05 交互动效
+            value: motion
+          - label: 06 Logo/VI
+            value: identity
+          - label: 07 海报
+            value: poster
+          - label: 08 名片与物料
+            value: print
+          - label: 09 包装设计
+            value: packaging
+          - label: 10 插画
+            value: illustration
+          - label: 11 门店视觉
+            value: retail
+          - label: 12 短视频与 IP
+            value: ip
+      - name: cover
+        label: 封面图
+        widget: image
+        required: false
+      - name: year
+        label: 年份
+        widget: number
+        value_type: int
+      - name: type
+        label: 项目类型（如 从 0 到 1 / 改版）
+        widget: string
+      - name: client
+        label: 客户
+        widget: string
+      - name: role
+        label: 我的角色
+        widget: string
+      - name: period
+        label: 时间（如 2026.03 — 2026.06）
+        widget: string
+      - name: summary
+        label: 一句话摘要（分类页卡片上显示）
+        widget: string
+        required: false
+      - name: order
+        label: 排序（数字小的在前，可不填）
+        widget: number
+        value_type: int
+        required: false
+      - name: draft
+        label: 草稿（打开时不会发布到网站）
+        widget: boolean
+        default: true
+      - name: body
+        label: 正文（用「标题 2」分节，每节会自动排版）
+        widget: markdown
+  - name: pages
+    label: 首页板块
+    files:
+      - name: site
+        label: 网站信息 / 联系方式
+        file: src/settings/site.json
+        fields:
+          - name: name
+            label: 你的名字
+            widget: string
+          - name: nameEn
+            label: 英文名
+            widget: string
+          - name: role
+            label: 职业
+            widget: string
+          - name: tagline
+            label: 顶栏名字后的副标题
+            widget: string
+          - name: title
+            label: 浏览器标签页标题
+            widget: string
+          - name: description
+            label: 一句话介绍（搜索结果和分享卡片里显示）
+            widget: text
+          - name: city
+            label: 所在城市
+            widget: string
+          - name: careerStart
+            label: 入行年份（底部时间轴）
+            widget: number
+            value_type: int
+          - name: careerEnd
+            label: 时间轴结束年份
+            widget: number
+            value_type: int
+          - name: wechatId
+            label: 微信号
+            widget: string
+          - name: wechatQr
+            label: 微信二维码
+            widget: image
+            required: false
+          - name: email
+            label: 邮箱
+            widget: string
+          - name: ctaLabel
+            label: 手机底部按钮文字
+            widget: string
+          - name: icp
+            label: ICP 备案号（没有就留空）
+            widget: string
+            required: false
+      - name: categories
+        label: 书架分类（12 本书）
+        file: src/settings/categories.json
+        fields:
+          - widget: object
+            collapsed: true
+            fields:
+              - name: name
+                label: 名称
+                widget: string
+              - name: en
+                label: 英文名
+                widget: string
+              - name: binding
+                label: 装帧色
+                widget: select
+                options:
+                  - label: 米白
+                    value: bone
+                  - label: 牛皮
+                    value: kraft
+                  - label: 墨黑
+                    value: ink
+                  - label: 主色
+                    value: accent
+              - name: intro
+                label: 简介
+                widget: text
+              - name: cover
+                label: 封面图（书的正面，约 5:7，可不传）
+                widget: image
+                required: false
+              - name: spine
+                label: 书脊图（书的侧面，可不传）
+                widget: image
+                required: false
+            name: app
+            label: 01 APP 界面
+          - widget: object
+            collapsed: true
+            fields:
+              - name: name
+                label: 名称
+                widget: string
+              - name: en
+                label: 英文名
+                widget: string
+              - name: binding
+                label: 装帧色
+                widget: select
+                options:
+                  - label: 米白
+                    value: bone
+                  - label: 牛皮
+                    value: kraft
+                  - label: 墨黑
+                    value: ink
+                  - label: 主色
+                    value: accent
+              - name: intro
+                label: 简介
+                widget: text
+              - name: cover
+                label: 封面图（书的正面，约 5:7，可不传）
+                widget: image
+                required: false
+              - name: spine
+                label: 书脊图（书的侧面，可不传）
+                widget: image
+                required: false
+            name: web
+            label: 02 网页设计
+          - widget: object
+            collapsed: true
+            fields:
+              - name: name
+                label: 名称
+                widget: string
+              - name: en
+                label: 英文名
+                widget: string
+              - name: binding
+                label: 装帧色
+                widget: select
+                options:
+                  - label: 米白
+                    value: bone
+                  - label: 牛皮
+                    value: kraft
+                  - label: 墨黑
+                    value: ink
+                  - label: 主色
+                    value: accent
+              - name: intro
+                label: 简介
+                widget: text
+              - name: cover
+                label: 封面图（书的正面，约 5:7，可不传）
+                widget: image
+                required: false
+              - name: spine
+                label: 书脊图（书的侧面，可不传）
+                widget: image
+                required: false
+            name: miniapp
+            label: 03 小程序
+          - widget: object
+            collapsed: true
+            fields:
+              - name: name
+                label: 名称
+                widget: string
+              - name: en
+                label: 英文名
+                widget: string
+              - name: binding
+                label: 装帧色
+                widget: select
+                options:
+                  - label: 米白
+                    value: bone
+                  - label: 牛皮
+                    value: kraft
+                  - label: 墨黑
+                    value: ink
+                  - label: 主色
+                    value: accent
+              - name: intro
+                label: 简介
+                widget: text
+              - name: cover
+                label: 封面图（书的正面，约 5:7，可不传）
+                widget: image
+                required: false
+              - name: spine
+                label: 书脊图（书的侧面，可不传）
+                widget: image
+                required: false
+            name: admin
+            label: 04 B 端后台
+          - widget: object
+            collapsed: true
+            fields:
+              - name: name
+                label: 名称
+                widget: string
+              - name: en
+                label: 英文名
+                widget: string
+              - name: binding
+                label: 装帧色
+                widget: select
+                options:
+                  - label: 米白
+                    value: bone
+                  - label: 牛皮
+                    value: kraft
+                  - label: 墨黑
+                    value: ink
+                  - label: 主色
+                    value: accent
+              - name: intro
+                label: 简介
+                widget: text
+              - name: cover
+                label: 封面图（书的正面，约 5:7，可不传）
+                widget: image
+                required: false
+              - name: spine
+                label: 书脊图（书的侧面，可不传）
+                widget: image
+                required: false
+            name: motion
+            label: 05 交互动效
+          - widget: object
+            collapsed: true
+            fields:
+              - name: name
+                label: 名称
+                widget: string
+              - name: en
+                label: 英文名
+                widget: string
+              - name: binding
+                label: 装帧色
+                widget: select
+                options:
+                  - label: 米白
+                    value: bone
+                  - label: 牛皮
+                    value: kraft
+                  - label: 墨黑
+                    value: ink
+                  - label: 主色
+                    value: accent
+              - name: intro
+                label: 简介
+                widget: text
+              - name: cover
+                label: 封面图（书的正面，约 5:7，可不传）
+                widget: image
+                required: false
+              - name: spine
+                label: 书脊图（书的侧面，可不传）
+                widget: image
+                required: false
+            name: identity
+            label: 06 Logo/VI
+          - widget: object
+            collapsed: true
+            fields:
+              - name: name
+                label: 名称
+                widget: string
+              - name: en
+                label: 英文名
+                widget: string
+              - name: binding
+                label: 装帧色
+                widget: select
+                options:
+                  - label: 米白
+                    value: bone
+                  - label: 牛皮
+                    value: kraft
+                  - label: 墨黑
+                    value: ink
+                  - label: 主色
+                    value: accent
+              - name: intro
+                label: 简介
+                widget: text
+              - name: cover
+                label: 封面图（书的正面，约 5:7，可不传）
+                widget: image
+                required: false
+              - name: spine
+                label: 书脊图（书的侧面，可不传）
+                widget: image
+                required: false
+            name: poster
+            label: 07 海报
+          - widget: object
+            collapsed: true
+            fields:
+              - name: name
+                label: 名称
+                widget: string
+              - name: en
+                label: 英文名
+                widget: string
+              - name: binding
+                label: 装帧色
+                widget: select
+                options:
+                  - label: 米白
+                    value: bone
+                  - label: 牛皮
+                    value: kraft
+                  - label: 墨黑
+                    value: ink
+                  - label: 主色
+                    value: accent
+              - name: intro
+                label: 简介
+                widget: text
+              - name: cover
+                label: 封面图（书的正面，约 5:7，可不传）
+                widget: image
+                required: false
+              - name: spine
+                label: 书脊图（书的侧面，可不传）
+                widget: image
+                required: false
+            name: print
+            label: 08 名片与物料
+          - widget: object
+            collapsed: true
+            fields:
+              - name: name
+                label: 名称
+                widget: string
+              - name: en
+                label: 英文名
+                widget: string
+              - name: binding
+                label: 装帧色
+                widget: select
+                options:
+                  - label: 米白
+                    value: bone
+                  - label: 牛皮
+                    value: kraft
+                  - label: 墨黑
+                    value: ink
+                  - label: 主色
+                    value: accent
+              - name: intro
+                label: 简介
+                widget: text
+              - name: cover
+                label: 封面图（书的正面，约 5:7，可不传）
+                widget: image
+                required: false
+              - name: spine
+                label: 书脊图（书的侧面，可不传）
+                widget: image
+                required: false
+            name: packaging
+            label: 09 包装设计
+          - widget: object
+            collapsed: true
+            fields:
+              - name: name
+                label: 名称
+                widget: string
+              - name: en
+                label: 英文名
+                widget: string
+              - name: binding
+                label: 装帧色
+                widget: select
+                options:
+                  - label: 米白
+                    value: bone
+                  - label: 牛皮
+                    value: kraft
+                  - label: 墨黑
+                    value: ink
+                  - label: 主色
+                    value: accent
+              - name: intro
+                label: 简介
+                widget: text
+              - name: cover
+                label: 封面图（书的正面，约 5:7，可不传）
+                widget: image
+                required: false
+              - name: spine
+                label: 书脊图（书的侧面，可不传）
+                widget: image
+                required: false
+            name: illustration
+            label: 10 插画
+          - widget: object
+            collapsed: true
+            fields:
+              - name: name
+                label: 名称
+                widget: string
+              - name: en
+                label: 英文名
+                widget: string
+              - name: binding
+                label: 装帧色
+                widget: select
+                options:
+                  - label: 米白
+                    value: bone
+                  - label: 牛皮
+                    value: kraft
+                  - label: 墨黑
+                    value: ink
+                  - label: 主色
+                    value: accent
+              - name: intro
+                label: 简介
+                widget: text
+              - name: cover
+                label: 封面图（书的正面，约 5:7，可不传）
+                widget: image
+                required: false
+              - name: spine
+                label: 书脊图（书的侧面，可不传）
+                widget: image
+                required: false
+            name: retail
+            label: 11 门店视觉
+          - widget: object
+            collapsed: true
+            fields:
+              - name: name
+                label: 名称
+                widget: string
+              - name: en
+                label: 英文名
+                widget: string
+              - name: binding
+                label: 装帧色
+                widget: select
+                options:
+                  - label: 米白
+                    value: bone
+                  - label: 牛皮
+                    value: kraft
+                  - label: 墨黑
+                    value: ink
+                  - label: 主色
+                    value: accent
+              - name: intro
+                label: 简介
+                widget: text
+              - name: cover
+                label: 封面图（书的正面，约 5:7，可不传）
+                widget: image
+                required: false
+              - name: spine
+                label: 书脊图（书的侧面，可不传）
+                widget: image
+                required: false
+            name: ip
+            label: 12 短视频与 IP
+          - name: empty
+            label: 还没有作品的分类，子页里显示的文字
+            widget: object
+            collapsed: true
+            fields:
+              - name: title
+                label: 标题
+                widget: string
+              - name: text
+                label: 说明
+                widget: text
+              - name: button
+                label: 按钮文字
+                widget: string
+      - name: services
+        label: 服务
+        file: src/settings/services.json
+        fields:
+          - name: title
+            label: 板块标题
+            widget: string
+          - name: en
+            label: 英文标题
+            widget: string
+          - name: lead
+            label: 一句话说明
+            widget: text
+          - name: exclusive
+            label: 同一时间只展开一项
+            widget: boolean
+          - name: items
+            label: 服务项
+            label_singular: 服务项
+            widget: list
+            summary: "{{name}}"
+            fields:
+              - name: icon
+                label: 图标
+                widget: select
+                options:
+                  - label: 界面 / APP
+                    value: interface
+                  - label: 网页
+                    value: web
+                  - label: 小程序
+                    value: miniapp
+                  - label: 品牌 / Logo
+                    value: brand
+                  - label: 设计系统 / 后台
+                    value: system
+                  - label: 动效
+                    value: motion
+                  - label: 海报 / 物料
+                    value: print
+                  - label: 包装
+                    value: package
+                  - label: 插画
+                    value: illustration
+                  - label: 门店
+                    value: retail
+                  - label: 短视频 / IP
+                    value: video
+                  - label: 沟通
+                    value: talk
+                  - label: 报价 / 排期
+                    value: plan
+                  - label: 设计 / 提案
+                    value: sketch
+                  - label: 修改
+                    value: revise
+                  - label: 交付
+                    value: deliver
+                  - label: 长期合作
+                    value: partner
+              - name: name
+                label: 服务名称
+                widget: string
+              - name: summary
+                label: 一句话说明
+                widget: text
+              - name: includes
+                label: 包含内容
+                widget: list
+                field:
+                  name: item
+                  label: 内容
+                  widget: string
+              - name: deliverables
+                label: 交付物
+                widget: list
+                field:
+                  name: item
+                  label: 交付物
+                  widget: string
+              - name: period
+                label: 周期
+                widget: string
+              - name: price
+                label: 参考价格
+                widget: string
+          - name: note
+            label: 列表下方小字（留空不显示）
+            widget: string
+            required: false
+      - name: process
+        label: 合作流程
+        file: src/settings/process.json
+        fields:
+          - name: title
+            label: 板块标题
+            widget: string
+          - name: en
+            label: 英文标题
+            widget: string
+          - name: lead
+            label: 一句话说明
+            widget: text
+          - name: steps
+            label: 步骤（建议 4–6 步）
+            label_singular: 步骤
+            widget: list
+            summary: "{{title}}"
+            fields:
+              - name: icon
+                label: 图标
+                widget: select
+                options:
+                  - label: 界面 / APP
+                    value: interface
+                  - label: 网页
+                    value: web
+                  - label: 小程序
+                    value: miniapp
+                  - label: 品牌 / Logo
+                    value: brand
+                  - label: 设计系统 / 后台
+                    value: system
+                  - label: 动效
+                    value: motion
+                  - label: 海报 / 物料
+                    value: print
+                  - label: 包装
+                    value: package
+                  - label: 插画
+                    value: illustration
+                  - label: 门店
+                    value: retail
+                  - label: 短视频 / IP
+                    value: video
+                  - label: 沟通
+                    value: talk
+                  - label: 报价 / 排期
+                    value: plan
+                  - label: 设计 / 提案
+                    value: sketch
+                  - label: 修改
+                    value: revise
+                  - label: 交付
+                    value: deliver
+                  - label: 长期合作
+                    value: partner
+              - name: title
+                label: 步骤名称
+                widget: string
+              - name: desc
+                label: 这一步做什么
+                widget: text
+              - name: time
+                label: 大约多久
+                widget: string
+      - name: about
+        label: 关于我
+        file: src/settings/about.json
+        fields:
+          - name: title
+            label: 板块标题
+            widget: string
+          - name: en
+            label: 英文标题
+            widget: string
+          - name: lead
+            label: 一句话说明（可留空）
+            widget: string
+            required: false
+          - name: intro
+            label: 自我介绍（一段一项）
+            widget: list
+            field:
+              name: p
+              label: 段落
+              widget: text
+          - name: photo
+            label: 照片
+            widget: image
+            required: false
+          - name: photoCaption
+            label: 照片下方小字
+            widget: string
+          - name: careerTitle
+            label: 履历标题
+            widget: string
+          - name: career
+            label: 履历（从近到远）
+            label_singular: 经历
+            widget: list
+            summary: "{{time}} {{org}}"
+            fields:
+              - name: time
+                label: 时间
+                widget: string
+              - name: title
+                label: 职位
+                widget: string
+              - name: org
+                label: 公司 / 团队
+                widget: string
+              - name: note
+                label: 做了什么
+                widget: text
+          - name: skillsTitle
+            label: 能力标题
+            widget: string
+          - name: skills
+            label: 能力分组
+            label_singular: 分组
+            widget: list
+            summary: "{{group}}"
+            fields:
+              - name: group
+                label: 分组名称
+                widget: string
+              - name: tags
+                label: 能力标签
+                widget: list
+                field:
+                  name: tag
+                  label: 标签
+                  widget: string
+      - name: reviews
+        label: 客户评价
+        file: src/settings/reviews.json
+        fields:
+          - name: title
+            label: 板块标题
+            widget: string
+          - name: en
+            label: 英文标题
+            widget: string
+          - name: lead
+            label: 一句话说明
+            widget: text
+          - name: items
+            label: 评价（请先给截图打码：头像、昵称、电话、金额）
+            label_singular: 评价
+            widget: list
+            summary: "{{client}} · {{project}}"
+            fields:
+              - name: client
+                label: 客户类型
+                widget: string
+              - name: project
+                label: 项目
+                widget: string
+              - name: image
+                label: 截图
+                widget: image
+                required: false
+      - name: contact
+        label: 联系
+        file: src/settings/contact.json
+        fields:
+          - name: title
+            label: 板块标题
+            widget: string
+          - name: en
+            label: 英文标题
+            widget: string
+          - name: statement
+            label: 大字邀请语（换行即分行）
+            widget: text
+          - name: lead
+            label: 补充说明
+            widget: text
+          - name: response
+            label: 回复时间
+            widget: string
+      - name: brief
+        label: 合作需求单
+        file: src/settings/brief.json
+        fields:
+          - name: title
+            label: 标题
+            widget: string
+          - name: lead
+            label: 一句话说明
+            widget: text
+          - name: servicesLabel
+            label: 「想做什么」标题
+            widget: string
+          - name: extraServices
+            label: 服务板块之外的选项
+            widget: list
+            field:
+              name: o
+              label: 选项
+              widget: string
+          - name: budgetLabel
+            label: 「预算」标题
+            widget: string
+          - name: budgets
+            label: 预算选项
+            widget: list
+            field:
+              name: o
+              label: 选项
+              widget: string
+          - name: timeLabel
+            label: 「时间」标题
+            widget: string
+          - name: timelines
+            label: 时间选项
+            widget: list
+            field:
+              name: o
+              label: 选项
+              widget: string
+          - name: noteLabel
+            label: 「一句话需求」标题
+            widget: string
+          - name: notePlaceholder
+            label: 「一句话需求」输入框提示
+            widget: string
+          - name: nameLabel
+            label: 「称呼」标题
+            widget: string
+          - name: namePlaceholder
+            label: 「称呼」输入框提示
+            widget: string
+          - name: previewLabel
+            label: 预览标题
+            widget: string
+          - name: heading
+            label: 复制出去的第一行
+            widget: string
+          - name: emptyValue
+            label: 没选的项显示
+            widget: string
+          - name: button
+            label: 复制按钮文字
+            widget: string
+          - name: copied
+            label: 复制成功提示
+            widget: string
+          - name: failed
+            label: 复制失败提示
+            widget: string
+          - name: openWechat
+            label: 「打开微信」按钮文字
+            widget: string
+          - name: mobileLink
+            label: 手机名片里的入口文字
+            widget: string

@@ -1,0 +1,27 @@
+{
+  "name": "portfolio",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "predev": "node scripts/fetch-fonts.mjs",
+    "dev": "astro dev",
+    "prebuild": "node scripts/fetch-fonts.mjs",
+    "build": "astro build",
+    "preview": "astro preview",
+    "fonts:fetch": "node scripts/fetch-fonts.mjs",
+    "check": "astro check",
+    "test": "node --test src/scripts/**/*.test.ts"
+  },
+  "dependencies": {
+    "astro": "^7.4.7"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@astrojs/markdown-satteri": "^0.4.7",
+    "@types/node": "^24.19.2",
+    "node-html-parser": "^9.0.7",
+    "subset-font": "^2.9.0",
+    "typescript": "^6.0.3"
+  }
+}

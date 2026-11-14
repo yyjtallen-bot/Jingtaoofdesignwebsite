@@ -1,0 +1,36 @@
+---
+// 页脚：署名、ICP 备案号（site.icp 有值才显示）、回到顶部
+import { site } from '@/config/site';
+const year = new Date().getFullYear();
+---
+
+<footer class="foot wrap">
+  <p class="t-label">© <span class="t-mono">{year}</span> {site.name} · {site.tagline}</p>
+  {
+    site.icp && (
+      <a class="t-label" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">
+        {site.icp}
+      </a>
+    )
+  }
+  <a class="t-label top" href="#top">回到顶部 ↑</a>
+</footer>
+
+<style>
+  .foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-4);
+    margin-top: var(--section-gap);
+    padding-block: var(--sp-6);
+    border-top: 1px solid var(--rule-soft);
+    color: var(--accent);
+    font-family: var(--font-sans);
+  }
+  .foot .t-label {
+    font-family: var(--font-sans);
+    letter-spacing: 0.16em;
+  }
+</style>

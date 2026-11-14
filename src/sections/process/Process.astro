@@ -1,0 +1,131 @@
+---
+// 「合作流程」：一条刻度线串起各步骤（文字在 data.ts）
+import Section from '@/components/Section.astro';
+import Icon from '@/components/icons/Icon.astro';
+import { process as d } from './data';
+
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+
+<Section id="process" title={d.title} en={d.en} lead={d.lead}>
+  <ol class="steps" style={`--n:${d.steps.length}`}>
+    <i class="steps-line" data-reveal="line" aria-hidden="true"></i>
+    {
+      d.steps.map((s, i) => (
+        <li class="step" style={`--i:${i}`}>
+          <i class="step-dot" aria-hidden="true" />
+          <div class="step-ico" data-reveal="clip" style={`--i:${i}`}>
+            <Icon name={s.icon} size={48} />
+          </div>
+          <p class="step-no t-mono mask">
+            <span data-reveal style={`--i:${i}`}>
+              {pad(i + 1)}
+            </span>
+          </p>
+          <h3 class="step-title mask">
+            <span data-reveal style={`--i:${i + 1}`}>
+              {s.title}
+            </span>
+          </h3>
+          <p class="step-desc">{s.desc}</p>
+          <p class="step-time t-label">{s.time}</p>
+        </li>
+      ))
+    }
+  </ol>
+</Section>
+
+<style>
+  .steps {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    gap: var(--sp-5);
+    padding-top: var(--sp-6);
+  }
+  /* 横向刻度线 */
+  .steps-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 1px;
+    background: var(--accent);
+  }
+  .step {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: var(--sp-3);
+  }
+  .step-dot {
+    position: absolute;
+    left: 0;
+    top: calc(var(--sp-6) * -1 - 4px);
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1px solid var(--accent);
+  }
+  .step:first-child .step-dot {
+    background: var(--accent);
+  }
+  .step-ico {
+    margin-bottom: var(--sp-3);
+    color: var(--ink);
+  }
+  /* 悬停：图标主色块错位 */
+  .step:hover {
+    --icon-shift-x: 2.5px;
+    --icon-shift-y: -2.5px;
+  }
+  .step-no {
+    font-size: var(--fs-sm);
+    color: var(--accent);
+  }
+  .step-title {
+    font-size: var(--fs-h4);
+    margin-bottom: var(--sp-2);
+  }
+  .step-desc {
+    font-size: var(--fs-sm);
+    line-height: 1.85;
+    color: var(--ink-2);
+  }
+  .step-time {
+    margin-top: var(--sp-2);
+    color: var(--muted);
+  }
+
+  /* 手机：竖排，线在左侧 */
+  @media (max-width: 767px) {
+    .steps {
+      grid-template-columns: 1fr;
+      gap: var(--sp-7);
+      padding: 0 0 0 var(--sp-6);
+    }
+    .steps-line {
+      left: 4px;
+      right: auto;
+      top: 6px;
+      bottom: 0;
+      width: 1px;
+      height: auto;
+    }
+    :global(.js) .steps-line {
+      transform-origin: top center;
+    }
+    :global(.js) .steps-line:not(:global(.is-in)) {
+      transform: scaleY(0);
+    }
+    .step-dot {
+      left: calc(var(--sp-6) * -1);
+      top: 4px;
+    }
+    .step-ico :global(svg) {
+      width: 40px;
+      height: 40px;
+    }
+  }
+</style>

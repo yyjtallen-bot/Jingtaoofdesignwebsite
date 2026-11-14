@@ -1,0 +1,62 @@
+---
+// 图标：<Icon name="interface" size={44} />
+// 颜色：线条跟随文字颜色（currentColor），实色块用主色，网点用墨色。
+// 父元素可以设置这些变量来做悬停微动（见服务板块）：
+//   --icon-shift-x / --icon-shift-y   实色块错位，像套色印刷没对准
+//   --icon-stroke                     线宽（默认 1.25px）
+import { icons, nextPatternId, type IconName } from './icons';
+
+interface Props {
+  name: IconName;
+  size?: number | string;
+  /** 有意义的图标给一段说明；纯装饰不填（读屏会跳过） */
+  label?: string;
+  class?: string;
+}
+
+const { name, size = 44, label, class: cls } = Astro.props;
+const pid = nextPatternId();
+const draw = icons[name] ?? icons.interface;
+---
+
+<svg
+  class:list={['icon', cls]}
+  viewBox="0 0 48 48"
+  width={size}
+  height={size}
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+  focusable="false"
+>
+  <defs>
+    <pattern id={pid} width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <circle class="dot" cx="1.5" cy="1.5" r="0.95"></circle>
+    </pattern>
+  </defs>
+  <g set:html={draw(`url(#${pid})`)} />
+</svg>
+
+<style>
+  .icon {
+    display: block;
+    flex: none;
+    overflow: visible;
+  }
+  .icon .dot {
+    fill: var(--icon-dot, color-mix(in oklab, var(--ink) 58%, transparent));
+  }
+  .icon :global(.i-l) {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: var(--icon-stroke, 1.25px);
+    stroke-linecap: square;
+    stroke-linejoin: miter;
+    vector-effect: non-scaling-stroke;
+  }
+  .icon :global(.i-s) {
+    fill: var(--icon-solid, var(--accent));
+    transform: translate(var(--icon-shift-x, 0px), var(--icon-shift-y, 0px));
+    transition: transform var(--dur-m) var(--ease-out);
+  }
+</style>

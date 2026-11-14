@@ -1,0 +1,22 @@
+{
+  "title": "合作需求单",
+  "lead": "[一句话说明：选好后复制，发到微信，我会按这份需求回复你]",
+  "servicesLabel": "想做什么（可多选）",
+  "extraServices": ["[其他]"],
+  "budgetLabel": "预算",
+  "budgets": ["[预算区间一]", "[预算区间二]", "[预算区间三]", "待沟通"],
+  "timeLabel": "期望时间",
+  "timelines": ["[时间选项一]", "[时间选项二]", "[时间选项三]", "不着急"],
+  "noteLabel": "一句话需求（可不填）",
+  "notePlaceholder": "[例如：新品牌上线，需要官网和小程序]",
+  "nameLabel": "称呼 / 品牌（可不填）",
+  "namePlaceholder": "[例如：王先生 · 某某茶饮]",
+  "previewLabel": "发给我的内容",
+  "heading": "【合作需求】",
+  "emptyValue": "待沟通",
+  "button": "复制需求，去微信发给我",
+  "copied": "已复制，打开微信粘贴发给我即可",
+  "failed": "复制没成功，请长按上面的文字手动复制",
+  "openWechat": "打开微信",
+  "mobileLink": "先填一份合作需求单 ↓"
+}

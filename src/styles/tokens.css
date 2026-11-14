@@ -1,0 +1,160 @@
+/* ─────────────────────────────────────────────────────────────
+   设计变量（Design Tokens）
+   想调整整体观感，优先改这个文件。主色只需改 --accent 一个值，
+   其他相关颜色（浅底、网点、选中色）都由它推导。
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  color-scheme: light;
+
+  /* ── 颜色 ─────────────────────────────── */
+  --paper: #ede6d7;        /* 纸底：暖米色 */
+  --paper-deep: #e3d9c6;   /* 深一级纸色：书脊、分隔块 */
+  --sheet: #f4efe6;        /* 子页纸：比纸底略亮，“从封面长出”的那张纸 */
+  --ink: #1b1a17;          /* 墨黑：正文 */
+  --ink-2: #4a463f;        /* 次级文字 */
+  --muted: #6e675b;        /* 注释、辅助信息（在纸底上对比度 ≈ 4.5:1） */
+
+  --accent: #2a3c57;       /* 主色：深黛蓝  ← 改这里 */
+
+  /* 由主色推导，一般不用改 */
+  --on-accent: var(--sheet);
+  --accent-wash: color-mix(in oklab, var(--accent) 9%, var(--paper));
+  --halftone-ink: color-mix(in oklab, var(--accent) 50%, transparent);
+  --rule: color-mix(in oklab, var(--ink) 88%, transparent);
+  --rule-soft: color-mix(in oklab, var(--ink) 16%, transparent);
+
+  /* ── 字体 ─────────────────────────────── */
+  /* Site * 是构建时生成的子集字体，后面是本机已装字体的兜底 */
+  --font-serif: "Site Serif", "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif;
+  --font-sans: "Site Sans", "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "Site Mono", "Site Sans", ui-monospace, "SF Mono", Consolas, monospace;
+
+  /* 字号：中文正文 16px 起；标题随视口缩放 */
+  --fs-micro: 10.5px;                        /* 书脊编号、刻度年份 */
+  --fs-label: 11.5px;                        /* 等宽小标签 */
+  --fs-sm: 13px;
+  --fs-base: 16px;
+  --fs-lead: 18px;
+  --fs-h4: clamp(19px, 1.5vw, 22px);
+  --fs-h3: clamp(22px, 2vw, 28px);
+  --fs-h2: clamp(30px, 3.6vw, 52px);
+  --fs-h1: clamp(40px, 5.6vw, 84px);
+  --fs-bgword: min(20vh, 13vw);              /* 背景竖排网点大字 */
+
+  --lh-tight: 1.04;
+  --lh-title: 1.22;
+  --lh-body: 1.85;
+
+  --tr-title: 0.02em;
+  --tr-body: 0.03em;
+  --tr-label: 0.14em;
+
+  /* ── 间距（4 / 8 体系） ─────────────────── */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --sp-8: 64px;
+  --sp-9: 96px;
+  --sp-10: 128px;
+  --section-gap: clamp(96px, 16vh, 180px);  /* 首页各板块之间 */
+
+  /* ── 版面 ─────────────────────────────── */
+  --gutter: clamp(16px, 2.6vw, 36px);       /* 页面左右留白，手机 16px */
+  --max: 1360px;                             /* 内容最大宽度 */
+  --measure: 36em;                           /* 正文行长 */
+  --topbar-h: 72px;
+  --hair: 1px;
+  --radius: 0px;                             /* 不用圆角 */
+  --radius-book: 1.5px;                      /* 书本边角的轻微圆润 */
+
+  /* ── 书本装帧色（src/data/categories.ts 里的 binding） ── */
+  --book-bone: #f4efe4;    /* 米白 */
+  --book-kraft: #d4c5a7;   /* 牛皮 */
+  --book-ink: #262521;     /* 墨黑 */
+  --book-accent: var(--accent);
+
+  /* ── 书架几何 ─────────────────────────── */
+  --shelf-h: min(47vh, 33vw, calc(100svh - 360px));  /* 书高（矮屏时让出标题和时间轴的空间） */
+  --spine-ratio: 0.17;                      /* 书脊宽 = 书高 × 0.17 */
+  --cover-ratio: 0.72;                       /* 封面宽 = 书高 × 0.72（约 5:7） */
+
+  /* ── 纸纹 ─────────────────────────────── */
+  --grain-opacity: 0.5;
+  --dot: 3px;                                /* 半调网点间距 */
+
+  /* ── 动效 ─────────────────────────────── */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);       /* 标题遮罩滑入、常规过渡 */
+  --ease-in-out: cubic-bezier(0.76, 0, 0.18, 1);    /* 子页从封面长出 */
+  --ease-ink: cubic-bezier(0.33, 1, 0.68, 1);       /* 墨迹晕开 */
+  --dur-xs: 160ms;
+  --dur-s: 300ms;
+  --dur-m: 650ms;      /* 标题切换 */
+  --dur-l: 900ms;      /* 子页文字升起 */
+  --dur-open: 1050ms;  /* 子页展开 */
+  --dur-close: 850ms;  /* 子页收回 */
+
+  /* ── 层级 ─────────────────────────────── */
+  --z-bg: 1;
+  --z-shelf: 10;
+  --z-ui: 20;
+  --z-sheet: 60;
+  --z-cta: 70;
+  --z-grain: 90;     /* 纸纹在所有内容之上（包括子页） */
+  --z-cursor: 100;
+}
+
+/* 书本装帧配色：bg 底色 / fg 文字 / c1 实色图形 / c2 网点 / edge 描边 */
+[data-binding='bone'] {
+  --b-bg: var(--book-bone);
+  --b-fg: var(--ink);
+  --b-c1: var(--accent);
+  --b-c2: var(--ink);
+  --b-edge: color-mix(in oklab, var(--ink) 16%, transparent);
+}
+[data-binding='kraft'] {
+  --b-bg: var(--book-kraft);
+  --b-fg: var(--ink);
+  --b-c1: var(--ink);
+  --b-c2: var(--accent);
+  --b-edge: color-mix(in oklab, var(--ink) 14%, transparent);
+}
+[data-binding='ink'] {
+  --b-bg: var(--book-ink);
+  --b-fg: var(--paper);
+  --b-c1: var(--paper);
+  --b-c2: color-mix(in oklab, var(--paper) 62%, transparent);
+  --b-edge: transparent;
+}
+[data-binding='accent'] {
+  --b-bg: var(--book-accent);
+  --b-fg: var(--paper);
+  --b-c1: var(--paper);
+  --b-c2: color-mix(in oklab, var(--paper) 58%, transparent);
+  --b-edge: transparent;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --gutter: 16px;
+    --topbar-h: 56px;
+    --fs-bgword: 22vw;
+    --shelf-h: min(68vw, 40svh);
+  }
+}
+
+/* 尊重系统“减少动态效果”：所有时长压到 1ms，JS 侧也读取同一媒体查询 */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-xs: 1ms;
+    --dur-s: 1ms;
+    --dur-m: 1ms;
+    --dur-l: 1ms;
+    --dur-open: 1ms;
+    --dur-close: 1ms;
+  }
+}

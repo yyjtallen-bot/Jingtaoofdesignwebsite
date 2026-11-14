@@ -1,0 +1,324 @@
+---
+// 设计变量预览页（仅供确认视觉，上线前可删除这个文件）
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Topbar from '@/components/Topbar.astro';
+import Icon from '@/components/icons/Icon.astro';
+import { iconNames } from '@/components/icons/icons';
+import { categories } from '@/data/categories';
+
+const colors = [
+  { v: '--paper', hex: '#EDE6D7', note: '纸底' },
+  { v: '--paper-deep', hex: '#E3D9C6', note: '深一级纸色' },
+  { v: '--sheet', hex: '#F4EFE6', note: '子页纸' },
+  { v: '--ink', hex: '#1B1A17', note: '墨黑' },
+  { v: '--ink-2', hex: '#4A463F', note: '次级文字' },
+  { v: '--muted', hex: '#6E675B', note: '辅助信息' },
+  { v: '--accent', hex: '#2A3C57', note: '主色 · 深黛蓝' },
+  { v: '--accent-wash', hex: '由主色推导', note: '主色浅底' },
+  { v: '--halftone-ink', hex: '由主色推导', note: '网点色' },
+];
+
+const scale = [
+  { v: '--fs-h1', tag: 'h1' },
+  { v: '--fs-h2', tag: 'h2' },
+  { v: '--fs-h3', tag: 'h3' },
+  { v: '--fs-h4', tag: 'h4' },
+];
+
+const spaces = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const motion = [
+  { v: '--ease-out', note: '标题遮罩滑入 · 常规过渡', val: 'cubic-bezier(.2,.8,.2,1)' },
+  { v: '--ease-in-out', note: '子页从封面长出', val: 'cubic-bezier(.76,0,.18,1)' },
+  { v: '--ease-ink', note: '墨迹晕开', val: 'cubic-bezier(.33,1,.68,1)' },
+];
+const specimen = '天地玄黄，宇宙洪荒。日月盈昃，辰宿列张。';
+---
+
+<BaseLayout title="设计变量" noindex>
+  <Topbar />
+  <main class="wrap sg">
+    <section>
+      <p class="t-label k">A · 颜色</p>
+      <ul class="swatches">
+        {
+          colors.map((c) => (
+            <li>
+              <span class="chip" style={`background:var(${c.v})`} />
+              <span class="t-mono small">{c.v}</span>
+              <span class="t-mono small muted">{c.hex}</span>
+              <span class="small">{c.note}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section>
+      <p class="t-label k">B · 字体</p>
+      <div class="fonts">
+        <div>
+          <p class="t-label muted">标题 · 思源宋体 SemiBold 600</p>
+          <p class="t-serif sample-serif">{specimen}</p>
+        </div>
+        <div>
+          <p class="t-label muted">正文 · 思源黑体 Regular 400</p>
+          <p class="sample-sans">{specimen}{specimen}</p>
+          <p class="t-label muted" style="margin-top:16px">标签 · 思源黑体 Medium 500</p>
+          <p class="sample-sans" style="font-weight:500">{categories.map((c) => c.name).join(' / ')}</p>
+        </div>
+        <div>
+          <p class="t-label muted">数字和英文小标签 · DM Mono 400 / 500</p>
+          <p class="t-mono sample-mono">0123456789 · 2018 — 2026</p>
+          <p class="t-label sample-mono-label">{categories.map((c) => `${c.no} ${c.en}`).join('  ·  ')}</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="t-label k">C · 字号</p>
+      {
+        scale.map((s) => (
+          <div class="scale-row">
+            <span class="t-mono small muted">{s.v}</span>
+            <s.tag>{categories[0].name} 包装设计</s.tag>
+          </div>
+        ))
+      }
+      <div class="scale-row">
+        <span class="t-mono small muted">--fs-base</span>
+        <p>{specimen}</p>
+      </div>
+      <div class="scale-row">
+        <span class="t-mono small muted">--fs-label</span>
+        <p class="t-label">01 App Interface</p>
+      </div>
+    </section>
+
+    <section>
+      <p class="t-label k">D · 背景竖排网点大字（思源宋体 Heavy 900）</p>
+      <div class="bgwords">
+        <span class="t-display halftone vertical">设计</span>
+        <span class="t-display halftone vertical">档案</span>
+      </div>
+    </section>
+
+    <section>
+      <p class="t-label k">E · 间距</p>
+      {
+        spaces.map((n) => (
+          <div class="space-row">
+            <span class="t-mono small muted">--sp-{n}</span>
+            <span class="bar" style={`width:var(--sp-${n})`} />
+          </div>
+        ))
+      }
+    </section>
+
+    <section>
+      <p class="t-label k">F · 动效曲线（点击方块看遮罩滑入）</p>
+      <ul class="motion">
+        {
+          motion.map((m) => (
+            <li>
+              <button class="demo" style={`--e:var(${m.v})`} aria-label={`演示 ${m.v}`}>
+                <span class="mask">
+                  <span class="demo-line t-serif">{categories[6].name}</span>
+                </span>
+              </button>
+              <span class="t-mono small">{m.v}</span>
+              <span class="t-mono small muted">{m.val}</span>
+              <span class="small">{m.note}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section>
+      <p class="t-label k">G · 图标（在 data.ts 里用 icon: '名字' 引用，悬停看实色块错位）</p>
+      <ul class="icons">
+        {
+          iconNames.map((n) => (
+            <li>
+              <Icon name={n} size={56} />
+              <span class="t-mono small">{n}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section>
+      <p class="t-label k">H · 本页实际加载的字体文件</p>
+      <p class="small muted">开发模式下是完整源字体（体积大，正常）；构建后应只看到 .woff2 子集。</p>
+      <ul class="font-files t-mono small" id="font-files">
+        <li class="muted">读取中…</li>
+      </ul>
+    </section>
+  </main>
+</BaseLayout>
+
+<script>
+  // 列出页面加载的字体资源及体积
+  const list = document.getElementById('font-files')!;
+  const seen = new Map<string, number>();
+  const render = () => {
+    list.innerHTML = '';
+    for (const [name, size] of seen) {
+      const li = document.createElement('li');
+      li.textContent = `${name}  —  ${size ? (size / 1024).toFixed(1) + ' KB' : '缓存'}`;
+      list.append(li);
+    }
+  };
+  const take = (entries: PerformanceEntryList) => {
+    for (const e of entries as PerformanceResourceTiming[]) {
+      if (/\.(woff2|ttf|otf)(\?|$)/.test(e.name)) {
+        seen.set(decodeURIComponent(e.name.split('/').pop()!), e.encodedBodySize || e.transferSize);
+      }
+    }
+    if (seen.size) render();
+  };
+  document.fonts.ready.then(() => take(performance.getEntriesByType('resource')));
+  new PerformanceObserver((l) => take(l.getEntries())).observe({ type: 'resource', buffered: true });
+
+  // 遮罩滑入演示
+  for (const btn of document.querySelectorAll<HTMLButtonElement>('.demo')) {
+    btn.addEventListener('click', () => {
+      const line = btn.querySelector<HTMLElement>('.demo-line')!;
+      const ease = getComputedStyle(btn).getPropertyValue('--e').trim() || 'ease';
+      const dur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--dur-m')) || 650;
+      line.animate([{ transform: 'translateY(105%)' }, { transform: 'translateY(0)' }], {
+        duration: dur,
+        easing: ease,
+        fill: 'both',
+      });
+    });
+  }
+</script>
+
+<style>
+  .sg {
+    padding-bottom: var(--sp-10);
+  }
+  section {
+    padding-block: var(--sp-7);
+    border-top: var(--hair) solid var(--rule-soft);
+  }
+  .k {
+    color: var(--accent);
+    margin-bottom: var(--sp-5);
+  }
+  .small {
+    font-size: var(--fs-sm);
+  }
+  .muted {
+    color: var(--muted);
+  }
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--sp-5) var(--sp-4);
+  }
+  .swatches li {
+    display: grid;
+    gap: 2px;
+  }
+  .chip {
+    display: block;
+    aspect-ratio: 3 / 2;
+    margin-bottom: var(--sp-2);
+    outline: var(--hair) solid var(--rule-soft);
+    outline-offset: -1px;
+  }
+  .fonts {
+    display: grid;
+    gap: var(--sp-6);
+  }
+  .sample-serif {
+    font-size: var(--fs-h2);
+    margin-top: var(--sp-2);
+  }
+  .sample-sans {
+    max-width: var(--measure);
+    margin-top: var(--sp-2);
+  }
+  .sample-mono {
+    font-size: var(--fs-h3);
+    margin-top: var(--sp-2);
+  }
+  .sample-mono-label {
+    margin-top: var(--sp-3);
+    line-height: 2;
+  }
+  .scale-row {
+    display: grid;
+    grid-template-columns: 9em 1fr;
+    align-items: baseline;
+    gap: var(--sp-4);
+    padding-block: var(--sp-2);
+  }
+  .bgwords {
+    display: flex;
+    justify-content: space-between;
+    height: calc(var(--fs-bgword) * 2.3);
+    font-size: var(--fs-bgword);
+    background: var(--paper);
+  }
+  .space-row {
+    display: grid;
+    grid-template-columns: 9em 1fr;
+    align-items: center;
+    gap: var(--sp-4);
+    padding-block: 3px;
+  }
+  .bar {
+    display: block;
+    height: 8px;
+    background: var(--accent);
+  }
+  .motion {
+    display: grid;
+    gap: var(--sp-4);
+  }
+  .motion li {
+    display: grid;
+    grid-template-columns: 9em 12em 15em 1fr;
+    align-items: center;
+    gap: var(--sp-4);
+  }
+  .demo {
+    border: var(--hair) solid var(--rule);
+    padding: var(--sp-2) var(--sp-3);
+    color: var(--accent);
+    font-size: var(--fs-h4);
+    text-align: left;
+  }
+  .icons {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: var(--sp-6) var(--sp-4);
+  }
+  .icons li {
+    display: grid;
+    justify-items: start;
+    gap: var(--sp-3);
+  }
+  .icons li:hover {
+    --icon-shift-x: 2px;
+    --icon-shift-y: -2px;
+  }
+  .font-files {
+    margin-top: var(--sp-4);
+    display: grid;
+    gap: var(--sp-1);
+  }
+  @media (max-width: 767px) {
+    .motion li {
+      grid-template-columns: 1fr 1fr;
+    }
+    .scale-row,
+    .space-row {
+      grid-template-columns: 7em 1fr;
+    }
+  }
+</style>

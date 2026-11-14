@@ -1,0 +1,68 @@
+---
+// 顶栏。overlay：叠在首屏上（首页用）
+import { site } from '@/config/site';
+import { withBase } from '@/lib/url';
+
+interface Props {
+  overlay?: boolean;
+}
+const { overlay = false } = Astro.props;
+---
+
+<header class:list={['topbar', { overlay }]}>
+  <a class="brand t-label" href={withBase('/')}>
+    <span>{site.name}</span>
+    <i class="line" aria-hidden="true"></i>
+    <span>{site.tagline}</span>
+  </a>
+  <nav class="nav" aria-label="主导航">
+    {site.nav.map((item) => <a class="t-label" href={withBase(item.href)}>{item.label}</a>)}
+  </nav>
+</header>
+
+<style>
+  .topbar {
+    position: relative;
+    z-index: var(--z-ui);
+    height: var(--topbar-h);
+    padding-inline: var(--gutter);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--accent);
+  }
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-4);
+    font-family: var(--font-sans);
+    letter-spacing: 0.2em;
+  }
+  .line {
+    width: 40px;
+    height: var(--hair);
+    background: currentColor;
+  }
+  .nav {
+    display: flex;
+    gap: var(--sp-6);
+  }
+  .nav a {
+    font-family: var(--font-sans);
+    letter-spacing: 0.2em;
+  }
+  @media (max-width: 767px) {
+    .line {
+      width: 22px;
+    }
+    .nav {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,123 @@
+---
+// 底部时间轴：从业年份 [入行年份] — 2026
+// 圆点停在当前分类最近一件作品的年份；该分类有作品的年份刻度会加深。
+// 分类还没有作品时，圆点为空心，停在最右端。
+import { site } from '@/config/site';
+
+const start = site.careerStart;
+const end = site.careerEnd;
+const span = Math.max(1, end - start);
+const pct = (y: number) => `${(((y - start) / span) * 100).toFixed(3)}%`;
+
+const years = Array.from({ length: span + 1 }, (_, i) => start + i);
+const minors = years.slice(0, -1).flatMap((y) => [0.25, 0.5, 0.75].map((q) => y + q));
+---
+
+<div class="timeline" data-timeline data-start={start} data-end={end} data-cursor="btn">
+  <div class="tl-track">
+    <i class="tl-line"></i>
+    {minors.map((y) => <i class="tick minor" style={`left:${pct(y)}`}></i>)}
+    {
+      years.map((y, i) => (
+        <span
+          class:list={[
+            'major',
+            {
+              first: i === 0,
+              last: i === span,
+              // 手机上隔一个显示年份，首尾总是显示
+              'm-hide': i !== 0 && i !== span && (i % 2 === 1 || span - i < 2),
+            },
+          ]}
+          style={`left:${pct(y)}`}
+          data-year={y}
+        >
+          <i class="tick"></i>
+          <span class="year t-mono">{y}</span>
+        </span>
+      ))
+    }
+    <i class="tl-dot is-empty" style="left:100%"></i>
+  </div>
+  <span class="sr-only">从业年份 {start} — {end}</span>
+</div>
+
+<style>
+  .timeline {
+    position: relative;
+    height: 40px;
+    margin-inline: var(--gutter);
+    color: var(--accent);
+  }
+  .tl-track {
+    position: absolute;
+    inset: 0;
+  }
+  .tl-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 12px;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.75;
+  }
+  .tick {
+    position: absolute;
+    top: 12px;
+    width: 1px;
+    height: 7px;
+    background: currentColor;
+    opacity: 0.4;
+  }
+  .major {
+    position: absolute;
+    top: 0;
+  }
+  .major .tick {
+    left: 0;
+    height: 13px;
+    opacity: 0.75;
+    transition:
+      height var(--dur-s) var(--ease-out),
+      opacity var(--dur-s) var(--ease-out);
+  }
+  .major.on .tick {
+    height: 19px;
+    opacity: 1;
+  }
+  .year {
+    position: absolute;
+    top: 30px;
+    left: 0;
+    transform: translateX(-50%);
+    font-size: var(--fs-micro);
+    line-height: 1;
+    letter-spacing: 0.06em;
+  }
+  .first .year {
+    transform: none;
+  }
+  .last .year {
+    transform: translateX(-100%);
+  }
+  .tl-dot {
+    position: absolute;
+    top: 12px;
+    width: 9px;
+    height: 9px;
+    margin: -4px 0 0 -4.5px;
+    border-radius: 50%;
+    background: currentColor;
+    border: 1px solid currentColor;
+    transition: background-color var(--dur-s) var(--ease-out);
+  }
+  .tl-dot.is-empty {
+    background: var(--paper);
+  }
+  @media (max-width: 767px) {
+    .m-hide .year {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,19 @@
+# 构建产物
+dist/
+.astro/
+
+# 依赖
+node_modules/
+
+# 源字体体积大，只放本机（运行 npm run fonts:fetch 获取）
+fonts-src/*
+!fonts-src/README.md
+
+# 系统 / 编辑器
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+*.log
+.env
+.env.*

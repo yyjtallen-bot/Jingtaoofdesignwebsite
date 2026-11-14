@@ -1,0 +1,6 @@
+这里放两张单独的图：
+
+  wechat-qr.png   微信二维码（正方形）
+  portrait.jpg    关于我的照片（竖版 4:5，例如 1200 × 1500）
+
+书的正面放 covers 文件夹，书的侧面放 spines 文件夹，评价截图放 reviews 文件夹。

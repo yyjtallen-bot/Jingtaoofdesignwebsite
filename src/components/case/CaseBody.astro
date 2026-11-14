@@ -1,0 +1,156 @@
+---
+// 案例正文排版。Markdown 经 integrations/rehype-case.mjs 处理后：
+//   每个「## 二级标题」是一节：标题在左侧停留并自动编号，内容在右侧；
+//   单独一行的图片变成带说明的图（说明 = 图片的替代文字），点击可放大。
+// 正文是 Markdown 生成的 HTML，没有组件作用域，所以样式都限定在 .case-body 下。
+---
+
+<article class="case-body wrap" data-progress data-zoomable>
+  <slot />
+</article>
+
+<style is:global>
+  .case-body {
+    counter-reset: case-sec;
+    padding-block: var(--sp-9) var(--sp-8);
+    font-size: 17px;
+    line-height: 1.95;
+    color: var(--ink-2);
+  }
+
+  /* 开头（第一个二级标题之前）的导语 */
+  .case-body .case-intro {
+    max-width: 34em;
+    margin-left: calc(26% + var(--sp-6));
+    margin-bottom: var(--sp-8);
+    font-size: var(--fs-lead);
+    color: var(--ink);
+  }
+
+  /* 一节：左标题右内容 */
+  .case-body .case-sec {
+    counter-increment: case-sec;
+    display: grid;
+    grid-template-columns: 26% minmax(0, 1fr);
+    gap: var(--sp-6);
+    padding-block: var(--sp-8);
+    border-top: 1px solid var(--rule-soft);
+  }
+  .case-body .case-sec-head {
+    position: sticky;
+    top: calc(var(--topbar-h) + var(--sp-5));
+    align-self: start;
+  }
+  .case-body h2 {
+    display: grid;
+    gap: var(--sp-3);
+    font-size: var(--fs-h3);
+    color: var(--accent);
+  }
+  .case-body h2::before {
+    content: counter(case-sec, decimal-leading-zero);
+    font-family: var(--font-mono);
+    font-size: var(--fs-label);
+    font-weight: 400;
+    letter-spacing: 0.08em;
+  }
+
+  /* 内容 */
+  .case-body .case-sec-body > * {
+    max-width: 36em;
+  }
+  .case-body .case-sec-body > * + * {
+    margin-top: 1.1em;
+  }
+  .case-body h3 {
+    margin-top: 2em;
+    font-size: var(--fs-h4);
+    color: var(--ink);
+  }
+  .case-body strong {
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .case-body a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+  }
+  .case-body ul,
+  .case-body ol {
+    padding-left: 1.2em;
+  }
+  .case-body ul {
+    list-style: square;
+  }
+  .case-body ol {
+    list-style: decimal-leading-zero;
+  }
+  .case-body li + li {
+    margin-top: 0.4em;
+  }
+  .case-body li::marker {
+    color: var(--accent);
+  }
+  .case-body blockquote {
+    margin: 2em 0;
+    padding-left: var(--sp-5);
+    border-left: 2px solid var(--accent);
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: var(--fs-h4);
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  .case-body hr {
+    border: 0;
+    height: 1px;
+    background: var(--rule-soft);
+    margin: 3em 0;
+  }
+  .case-body code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+
+  /* 图片：比文字栏更宽，铺满右侧整栏 */
+  .case-body .case-sec-body > .case-figure,
+  .case-body .case-sec-body > p:has(> img) {
+    max-width: none;
+    margin-block: 2em;
+  }
+  .case-body img {
+    width: 100%;
+    height: auto;
+    background: var(--paper-deep);
+  }
+  .case-body figcaption {
+    margin-top: var(--sp-3);
+    font-family: var(--font-sans);
+    font-size: var(--fs-sm);
+    color: var(--muted);
+  }
+  .case-body figcaption::before {
+    content: '— ';
+  }
+
+  @media (max-width: 767px) {
+    .case-body {
+      font-size: 16px;
+      padding-block: var(--sp-8) var(--sp-7);
+    }
+    .case-body .case-intro {
+      margin-left: 0;
+      font-size: 16px;
+    }
+    .case-body .case-sec {
+      grid-template-columns: 1fr;
+      gap: var(--sp-5);
+      padding-block: var(--sp-7);
+    }
+    .case-body .case-sec-head {
+      position: static;
+    }
+  }
+</style>
