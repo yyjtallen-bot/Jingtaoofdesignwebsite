@@ -2,8 +2,10 @@
 //
 // 颜色全部跟着装帧色走（tokens.css 里每种装帧的 --b-fg 前景 / --b-ac 主色 / --b-pa 纸色 /
 // --b-on 主色上的字 / --b-bg 底色），在后台换了装帧色，封面会自动换色。
-// 网点图案在 HalftoneDefs.astro（cv-f1/f2/f3 前景网点，cv-a1/a2/a3 主色网点，cv-o1 主色上的网点）。
-// 每本书的画面只在页面里画一次（<symbol id="cv-分类id">），书架上的书用 <use> 引用，手机上不会变重。
+// 每本书的画面只在页面里画一次（<symbol id="cv-分类id">，在 HalftoneDefs.astro），书架上的书用 <use> 引用。
+//
+// 网点一律逐个画出来（dots()），不用 SVG 的图案填充（pattern）：
+// Edge 等浏览器在 3D 书架里会把图案填充整块画丢（子页里正常、书架上一片空白）。
 //
 // 书名、英文名取自分类设置；右下角的概念字写在这里。想改某本书的画面，改对应 id 的那一段即可。
 // 在后台给某本书上传了封面图时，以上传的图片为准，不用这里的设计。
@@ -16,8 +18,7 @@ export interface CoverInfo {
   binding: string;
 }
 
-type Pat = (kind: string) => string;
-type Art = (c: CoverInfo, P: Pat, tagline: string) => string;
+type Art = (c: CoverInfo, tagline: string) => string;
 
 const f = (n: number) => n.toFixed(1);
 const esc = (s: string) => s.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
@@ -59,6 +60,32 @@ function V(t: string, x: number, y: number, size: number, c: Fill = 'f', step = 
 /** 竖排文字占到的底部位置 */
 const vEnd = (t: string, y: number, size: number) => y + (t.replace(/\s+/g, '').length - 1) * size * 1.08 + size * 0.2;
 
+/**
+ * 网点：在 box 范围的格点上画小方点，合成一条 path（同一颜色）。
+ * inside(x, y) 决定哪些格点要画；size 可以是固定值，也可以随位置变化（做渐变）。
+ * 隔行错开半格，像印刷的 45° 网屏。
+ */
+function dots(
+  box: [number, number, number, number],
+  step: number,
+  size: number | ((x: number, y: number) => number),
+  inside: (x: number, y: number) => boolean = () => true,
+  c: Fill = 'f',
+) {
+  const [x0, y0, x1, y1] = box;
+  let d = '';
+  let row = 0;
+  for (let y = y0 + step / 2; y < y1; y += step, row++) {
+    for (let x = x0 + step / 2 + (row % 2 ? step / 2 : 0); x < x1; x += step) {
+      if (!inside(x, y)) continue;
+      const z = typeof size === 'number' ? size : size(x, y);
+      if (z < 0.3) continue;
+      d += `M${f(x - z / 2)} ${f(y - z / 2)}h${f(z)}v${f(z)}h${f(-z)}z`;
+    }
+  }
+  return d ? `<path d="${d}" ${fl(c)}/>` : '';
+}
+
 // ── 12 本 ─────────────────────────────────────────────
 const covers: Record<string, { word: string; art: Art }> = {
   // 01 APP 界面 · 方寸：像素方格从被点中的一点漾开成涟漪
@@ -87,14 +114,16 @@ const covers: Record<string, { word: string; art: Art }> = {
   // 02 网页设计 · 栅格：栏线 + 冲出右边缘的色块，底下的网点层像套色错位
   web: {
     word: '栅格',
-    art: (c, P) => {
+    art: (c) => {
       let s = '';
       for (let i = 0; i <= 6; i++) {
         const x = 20 + i * 27;
         s += `<line x1="${x}" x2="${x}" y1="44" y2="236" stroke-opacity=".1" stroke-width=".5" ${SF}/>`;
       }
       s += `<rect x="20" y="48" width="162" height="5" ${fl('f')}/>`;
-      s += `<rect x="68" y="80" width="140" height="84" fill="${P('f2')}"/><rect x="76" y="71" width="140" height="84" fill-opacity=".9" ${fl('a')}/>`;
+      // 错位的网点层：只画色块没盖住的那一圈
+      s += dots([68, 80, 200, 164], 2.6, 1.35, (x, y) => x < 76 || y > 155);
+      s += `<rect x="76" y="71" width="140" height="84" fill-opacity=".9" ${fl('a')}/>`;
       for (const [y, w] of [
         [178, 70],
         [186, 50],
@@ -112,7 +141,7 @@ const covers: Record<string, { word: string; art: Art }> = {
   // 03 小程序 · 即用：高保真手机界面，被底线裁断；右上角的胶囊按钮被标注出来
   miniapp: {
     word: '即用',
-    art: (c, P, tagline) => {
+    art: (c, tagline) => {
       let s = '';
       s += `<path d="M62 238 V67 A17 17 0 0 1 79 50 H159 A17 17 0 0 1 176 67 V238 Z" ${fl('f')}/>`;
       s += `<path d="M66 238 V67 A13 13 0 0 1 79 54 H159 A13 13 0 0 1 172 67 V238 Z" ${fl('p')}/>`;
@@ -132,18 +161,35 @@ const covers: Record<string, { word: string; art: Art }> = {
       // 轮播图：网点远山 + 月
       s += `<rect x="72" y="94" width="94" height="46" rx="4" ${fl('a')}/>`;
       s += `<circle cx="150" cy="105" r="6" ${fl('o')}/>`;
-      s += `<path d="M72 132 L92 115 L104 125 L121 108 L141 127 L166 116 L166 136 Q166 140 162 140 L76 140 Q72 140 72 136 Z" fill="${P('o1')}"/>`;
+      const peaks: [number, number][] = [
+        [72, 132],
+        [92, 115],
+        [104, 125],
+        [121, 108],
+        [141, 127],
+        [166, 116],
+      ];
+      const ridge = (x: number) => {
+        for (let i = 1; i < peaks.length; i++) {
+          const [ax, ay] = peaks[i - 1];
+          const [bx, by] = peaks[i];
+          if (x <= bx) return ay + ((by - ay) * (x - ax)) / (bx - ax);
+        }
+        return peaks[peaks.length - 1][1];
+      };
+      s += dots([72, 104, 166, 140], 2.4, 1.05, (x, y) => y > ridge(x) && !((x < 75 || x > 163) && y > 137), 'o');
       s += H('新品上市', 78, 106, 7.5, 'o');
       s += `<line x1="78" x2="96" y1="110" y2="110" stroke-opacity=".6" stroke-width=".4" ${SO}/>`;
       // 金刚区：四个入口
-      s += `<circle cx="84" cy="153" r="6.5" ${fl('a')}/><circle cx="106" cy="153" r="6.5" ${fl('k')}/><circle cx="128" cy="153" r="6" stroke-width=".8" ${SA}/><circle cx="150" cy="153" r="6.5" fill="${P('f2')}"/>`;
+      s += `<circle cx="84" cy="153" r="6.5" ${fl('a')}/><circle cx="106" cy="153" r="6.5" ${fl('k')}/><circle cx="128" cy="153" r="6" stroke-width=".8" ${SA}/>`;
+      s += dots([143, 146, 157, 160], 2.4, 1.3, (x, y) => Math.hypot(x - 150, y - 153) < 6.3);
       s += [78, 100, 122, 144].map((x) => `<rect x="${x}" y="164" width="12" height="1.6" fill-opacity=".35" ${fl('f')}/>`).join('');
       // 列表
       s += `<rect x="72" y="173" width="18" height="18" rx="2" ${fl('k')}/>`;
       s += `<rect x="95" y="176" width="46" height="2.2" fill-opacity=".8" ${fl('f')}/><rect x="95" y="182" width="30" height="1.8" fill-opacity=".35" ${fl('f')}/>`;
       s += `<rect x="148" y="180" width="18" height="6.5" rx="3.25" stroke-width=".5" ${SA}/>`;
       s += `<line x1="95" x2="166" y1="195" y2="195" stroke-opacity=".1" stroke-width=".5" ${SF}/>`;
-      s += `<rect x="72" y="199" width="18" height="18" rx="2" fill="${P('f2')}"/>`;
+      s += dots([72, 199, 90, 217], 2.4, 1.3);
       s += `<rect x="95" y="202" width="52" height="2.2" fill-opacity=".8" ${fl('f')}/><rect x="95" y="208" width="24" height="1.8" fill-opacity=".35" ${fl('f')}/>`;
       s += `<rect x="148" y="206" width="18" height="6.5" rx="3.25" ${fl('a')}/>`;
       s += `<rect x="72" y="223" width="94" height="13" rx="6.5" ${fl('a')}/>`;
@@ -218,13 +264,18 @@ const covers: Record<string, { word: string; art: Art }> = {
     },
   },
 
-  // 07 海报 · 张力：一个巨大的网点字冲出封面右边和下边，被底线硬生生裁断
+  // 07 海报 · 张力：一个巨大的网屏字冲出封面右边和下边，被底线硬生生裁断
   poster: {
     word: '张力',
-    art: (c, P) => {
+    art: (c) => {
       const t = cjk(c.name) || c.name;
       const glyph = [...t].pop() ?? '';
-      let s = `<text x="58" y="234" font-size="212" fill="${P('f3')}" style="${FONT.b}">${esc(glyph)}</text>`;
+      let s = `<text x="58" y="234" font-size="212" style="${FILL.f};${FONT.b}">${esc(glyph)}</text>`;
+      // 用底色细线把大字切成小方点（就是印刷的网屏），不用图案填充
+      let d = '';
+      for (let x = 58; x <= 200; x += 2.7) d += `M${f(x)} 40V238`;
+      for (let y = 40; y <= 238; y += 2.7) d += `M56 ${f(y)}H200`;
+      s += `<path d="${d}" stroke-width="1.15" style="fill:none;stroke:var(--b-bg)"/>`;
       s += `<rect x="0" y="238" width="200" height="42" ${fl('k')}/>`;
       const end = vEnd(t, 72, 22);
       return s + V(t, 34, 72, 22) + `<line x1="34" x2="34" y1="${f(end + 10)}" y2="230" stroke-opacity=".5" stroke-width=".5" ${SF}/>`;
@@ -234,7 +285,7 @@ const covers: Record<string, { word: string; art: Art }> = {
   // 08 名片与物料 · 层叠：一叠名片，最上面那张就是书名；四角裁切线、两侧套准标、左下色标
   print: {
     word: '层叠',
-    art: (c, P) => {
+    art: (c) => {
       let s = '';
       const [x0, y0, x1, y1] = [24, 48, 178, 232];
       for (const [x, y, sx, sy] of [
@@ -250,9 +301,9 @@ const covers: Record<string, { word: string; art: Art }> = {
       ])
         s += `<circle cx="${x}" cy="${y}" r="4.5" stroke-width=".6" ${SF}/><path d="M${x - 7} ${y} h14 M${x} ${y - 7} v14" stroke-width=".5" ${SF}/>`;
       const card = (a: number, body: string, extra = '') =>
-        `<g transform="translate(102 140) rotate(${a})"><rect x="-52" y="-31" width="104" height="62" ${body}/>${extra}</g>`;
+        `<g transform="translate(102 140) rotate(${a})">${body ? `<rect x="-52" y="-31" width="104" height="62" ${body}/>` : ''}${extra}</g>`;
       s += card(-15, `stroke-opacity=".45" stroke-width=".6" ${SF}`);
-      s += card(-7, `fill="${P('f2')}"`);
+      s += card(-7, '', dots([-52, -31, 52, 31], 3, 1.5));
       s += card(-1, fl('p')) + card(-1, `stroke-opacity=".6" stroke-width=".6" ${SF}`);
       const tag = (c.en.split(/[\s&]+/)[0] || '').toUpperCase();
       s += card(
@@ -272,12 +323,13 @@ const covers: Record<string, { word: string; art: Art }> = {
   // 09 包装设计 · 折：展开的盒子刀版图，实线裁切、虚线折痕，正面填主色
   packaging: {
     word: '折',
-    art: (c, P) => {
+    art: (c) => {
       const u = 32;
       const x0 = 30;
       const y0 = 66;
       const p = (a: number, b: number) => `${f(x0 + a * u)} ${f(y0 + b * u)}`;
-      let s = `<rect x="${x0 + u}" y="${y0 + u}" width="${u}" height="${u}" ${fl('a')}/><rect x="${x0 + 2 * u}" y="${y0 + u}" width="${u}" height="${u}" fill="${P('f2')}"/>`;
+      let s = `<rect x="${x0 + u}" y="${y0 + u}" width="${u}" height="${u}" ${fl('a')}/>`;
+      s += dots([x0 + 2 * u, y0 + u, x0 + 3 * u, y0 + 2 * u], 2.6, 1.35);
       s += `<path d="M${p(1, 0)} L${p(2, 0)} L${p(2, 1)} L${p(4, 1)} L${p(4, 2)} L${p(2, 2)} L${p(2, 3)} L${p(1, 3)} L${p(1, 2)} L${p(0, 2)} L${p(0, 1)} L${p(1, 1)} Z" stroke-width=".9" ${SF}/>`;
       const flaps = [
         [[1, 0], [0.75, 0.15], [0.75, 0.85], [1, 1]],
@@ -300,28 +352,25 @@ const covers: Record<string, { word: string; art: Art }> = {
     },
   },
 
-  // 10 插画 · 远山：三层网点山，远山点细、近山点粗；一轮月，两只鸟
+  // 10 插画 · 远山：三层网点山，远山点细、近山点粗，每层从山脊往下逐渐变实；一轮月，两只鸟
   illustration: {
     word: '远山',
-    art: (c, P) => {
+    art: (c) => {
       const far = (x: number) => 150 - 38 * Math.sin(x / 30 + 1) - 14 * Math.sin(x / 11);
       const mid = (x: number) => 180 - 26 * Math.sin(x / 24 + 3) - 10 * Math.sin(x / 9 + 2);
       const near = (x: number) => 208 - 16 * Math.sin(x / 20 + 5) - 6 * Math.sin(x / 7);
-      const ridge = (fn: (x: number) => number) => {
-        let d = 'M6 240';
-        for (let x = 6; x <= 194; x += 4) d += ` L${x} ${f(fn(x))}`;
-        return `${d} L194 240 Z`;
+      // 每个格点属于哪一层：近的盖住远的
+      const size = (x: number, y: number) => {
+        let base = 0;
+        let top = 0;
+        if (y > near(x)) [base, top] = [2.05, near(x)];
+        else if (y > mid(x)) [base, top] = [1.5, mid(x)];
+        else if (y > far(x)) [base, top] = [0.98, far(x)];
+        else return 0;
+        return base * (0.45 + 0.55 * Math.min(1, (y - top) / 22));
       };
       let s = `<circle cx="146" cy="76" r="17" ${fl('f')}/>`;
-      // 每层先铺底色再铺网点，远处的网点不会从近处透出来
-      [
-        [far, 'f1'],
-        [mid, 'f2'],
-        [near, 'f3'],
-      ].forEach(([fn, pat]) => {
-        const d = ridge(fn as (x: number) => number);
-        s += `<path d="${d}" ${fl('k')}/><path d="${d}" fill="${P(pat as string)}"/>`;
-      });
+      s += dots([6, 90, 194, 240], 3.1, size);
       s += `<path d="M112 104 q3 -3 6 0 q3 -3 6 0 M126 96 q2 -2 4 0 q2 -2 4 0" stroke-width=".7" ${SF}/>`;
       return s + V(c.name, 34, 72, 32);
     },
@@ -330,19 +379,22 @@ const covers: Record<string, { word: string; art: Art }> = {
   // 11 门店视觉 · 入：一扇拱门，门里透出的光在地面上由网点铺开、渐渐变淡
   retail: {
     word: '入',
-    art: (c, P) => {
+    art: (c) => {
       let s = '';
       for (let bx = 20; bx <= 180; bx += 20) {
         const x2 = bx + (bx - 100) * (64 / 56);
         s += `<line x1="${bx}" y1="176" x2="${f(x2)}" y2="240" stroke-opacity=".25" stroke-width=".6" ${SF}/>`;
       }
       s += `<line x1="18" x2="184" y1="176" y2="176" stroke-opacity=".5" stroke-width=".6" ${SF}/>`;
-      // 光：三段梯形，网点由粗到细
-      const band = (y0: number, y1: number, pat: string) => {
-        const hw = (y: number) => 30 + (y - 176) * 0.55;
-        return `<path d="M${f(100 - hw(y0))} ${y0} L${f(100 + hw(y0))} ${y0} L${f(100 + hw(y1))} ${y1} L${f(100 - hw(y1))} ${y1} Z" fill="${P(pat)}"/>`;
-      };
-      s += band(176, 196, 'a3') + band(196, 218, 'a2') + band(218, 240, 'a1');
+      // 光：梯形里的网点，离门越远越细
+      const hw = (y: number) => 30 + (y - 176) * 0.55;
+      s += dots(
+        [40, 177, 160, 240],
+        3,
+        (x, y) => 2.3 * (1 - (y - 176) / 78),
+        (x, y) => Math.abs(x - 100) <= hw(y),
+        'a',
+      );
       s += `<path d="M70 176 V94 A30 30 0 0 1 130 94 V176 Z" ${fl('a')}/>`;
       return s + V(c.name, 32, 66, 15);
     },
@@ -377,10 +429,9 @@ export const hasCover = (id: string) => id in covers;
 export function coverSvg(c: CoverInfo, tagline: string): string {
   const d = covers[c.id];
   if (!d) return '';
-  const P: Pat = (kind) => `url(#cv-${kind}-${c.binding})`;
   const rule = (y: number) => `<line x1="20" x2="182" y1="${y}" y2="${y}" stroke-opacity=".45" stroke-width=".6" ${SF}/>`;
   return (
-    d.art(c, P, tagline) +
+    d.art(c, tagline) +
     // 书脊一侧的折痕
     `<rect width="6" height="280" style="fill:#000" fill-opacity=".08"/>` +
     H(`No.${c.no}`, 20, 26, 8, 'f', 'start', 1, 'm') +
