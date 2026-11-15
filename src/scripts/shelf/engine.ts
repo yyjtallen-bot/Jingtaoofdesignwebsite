@@ -1,6 +1,6 @@
 // 首屏书架：一个 requestAnimationFrame 循环驱动全部书本、标题、时间轴。
 import { SHELF } from './config';
-import { approach, buildScreenTable, mod, pose, rel, type Metrics } from './geometry';
+import { approach, buildScreenTable, edgeReach, mod, pose, rel, type Metrics } from './geometry';
 
 interface Item {
   id: string;
@@ -33,6 +33,7 @@ interface Book {
   shadeC: string;
   shadeB: string;
   hidden: boolean;
+  edge: string;
   cursor: string;
 }
 
@@ -88,6 +89,7 @@ export function initShelf(root: HTMLElement) {
         shadeC: '',
         shadeB: '',
         hidden: false,
+        edge: '',
         cursor: '',
       });
     }
@@ -117,6 +119,8 @@ export function initShelf(root: HTMLElement) {
 
   let m: Metrics;
   let table: Float64Array;
+  /** 两端可见范围（本），见 geometry.ts 的 edgeReach */
+  let reach = 6.5;
   let rect = zone.getBoundingClientRect();
 
   function yearOf(i: number) {
@@ -138,6 +142,7 @@ export function initShelf(root: HTMLElement) {
       P: SHELF.perspective,
     };
     table = buildScreenTable(m.U);
+    reach = edgeReach(m);
     rect = zone.getBoundingClientRect();
     drawFloor();
     for (const b of books) b.transform = '';
@@ -393,13 +398,16 @@ export function initShelf(root: HTMLElement) {
         if (Math.abs(want - b.lift) < 0.002) b.lift = want;
         else moving = true;
       }
-      const p = pose(r, m, table, b.lift, tiltX, tiltY);
+      const p = pose(r, m, table, b.lift, tiltX, tiltY, reach);
 
       if (p.hidden !== b.hidden) {
         b.hidden = p.hidden;
         b.el.style.visibility = p.hidden ? 'hidden' : '';
       }
       if (p.hidden) continue;
+      // 两端淡入淡出：书面盖上一层渐浓的纸色（见 Book.astro 的 .fog），书面本身不透明
+      const e = p.edge.toFixed(3);
+      if (e !== b.edge) b.el.style.setProperty('--edge', (b.edge = e));
 
       const t = `translate3d(${p.x.toFixed(2)}px,${p.y.toFixed(2)}px,${p.z.toFixed(2)}px) rotateX(${p.rx.toFixed(2)}deg) rotateY(${p.ry.toFixed(2)}deg)`;
       if (t !== b.transform) {

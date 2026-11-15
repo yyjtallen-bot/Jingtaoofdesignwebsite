@@ -30,6 +30,8 @@ export interface Pose {
   /** 打开程度：0 = 书脊朝外，1 = 封面朝外 */
   o: number;
   hidden: boolean;
+  /** 两端淡入淡出：1 = 完全可见，0 = 隐藏 */
+  edge: number;
   spineShade: number;
   coverShade: number;
   /** 封底的明暗（书架右侧的书露出的那一面） */
@@ -86,6 +88,19 @@ export function screenX(u: number, table: Float64Array, step = 2): number {
 }
 
 /**
+ * 书架两端的可见范围（以“本”为单位，从正中算起）。
+ * 原来按弧长 1.95U 一刀切，切点落在两本书之间的任意位置，导致翻动时
+ * 一端的书刚动就出现、另一端的书要翻完才消失。这里把切点取到最近的整格上，
+ * 并在最外一格里淡入淡出：进来的书和出去的书此消彼长，总量始终不变；
+ * 停稳时（整数位置）两端的书都是完全显示的。
+ */
+export function edgeReach(m: Metrics): number {
+  // r ≥ 1 时 arc 是线性的：arc(r) = r(ws+gap) + (d − ws + 1.4gap)/2
+  const rT = (m.U * 1.95 - (m.d - m.ws + 1.4 * m.gap) / 2) / (m.ws + m.gap);
+  return Math.max(2, Math.round(rT));
+}
+
+/**
  * 单本书的姿态
  * @param r     相对序号（0 = 正中打开的那本）
  * @param lift  悬停抽出程度 0…1
@@ -99,12 +114,14 @@ export function pose(
   lift = 0,
   tiltX = 0,
   tiltY = 0,
+  reach?: number,
 ): Pose {
   const o = smoothstep(Math.max(0, 1 - Math.abs(r)));
   const u = arc(r, m);
   const sc = scaleAt(u, m.U);
   const k = 1 / sc;
-  const hidden = Math.abs(u) > m.U * 1.95;
+  const edge = reach === undefined ? (Math.abs(u) > m.U * 1.95 ? 0 : 1) : Math.min(1, Math.max(0, reach - Math.abs(r)));
+  const hidden = edge <= 0;
   const z = m.P * (1 - k) + o * m.H * 0.1;
   const x = screenX(u, table) * k;
   const y = (m.H * 0.5 * (1 - sc) * 0.42 + o * m.H * 0.012 - lift * m.H * 0.05) * k;
@@ -119,6 +136,7 @@ export function pose(
     sc,
     o,
     hidden,
+    edge,
     spineShade: Math.min(0.6, o * 0.55 + (1 - sc) * 0.32),
     // 封面翻开到正面时逐渐变亮；没翻开时和封底一样按侧面处理，两边书的厚度看起来一致
     coverShade: (1 - o) * sideShade(sc),

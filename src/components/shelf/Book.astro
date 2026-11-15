@@ -54,16 +54,19 @@ const spineName = c.name.replace(/[A-Za-z0-9][A-Za-z0-9/&.\-]*/g, (run) =>
       )
     }
     <i class="shade"></i>
+    <i class="fog"></i>
   </div>
 
   <div class="face cover">
     <CoverArt category={c} eager={index === 0} />
     <i class="shade"></i>
+    <i class="fog"></i>
   </div>
 
   <!-- 封底：和封面相对的另一侧。书架右边的书会朝右转，观众看到的就是这一面，缺了它书就是扁的 -->
   <div class="face back">
     <i class="shade"></i>
+    <i class="fog"></i>
   </div>
 </div>
 
@@ -106,6 +109,16 @@ const spineName = c.name.replace(/[A-Za-z0-9][A-Za-z0-9/&.\-]*/g, (run) =>
     z-index: 2;
     background: #000;
     opacity: 0;
+    pointer-events: none;
+  }
+  /* 书架两端淡入淡出（书架脚本写 --edge）：用一层纸色慢慢盖住书面，
+     而不是让书面变透明——3D 场景里书面一透明，浏览器要重排所有图层，别的书会闪 */
+  .fog {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background: var(--paper);
+    opacity: calc(1 - var(--edge, 1));
     pointer-events: none;
   }
 

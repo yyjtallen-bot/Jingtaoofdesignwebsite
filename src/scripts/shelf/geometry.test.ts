@@ -1,7 +1,7 @@
 // 运行：npm test
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { arc, blend, buildScreenTable, pose, rel, scaleAt, screenX, type Metrics } from './geometry.ts';
+import { arc, blend, buildScreenTable, edgeReach, pose, rel, scaleAt, screenX, type Metrics } from './geometry.ts';
 
 const H = 420;
 const m: Metrics = { H, ws: H * 0.17, d: H * 0.72, gap: H * 0.035, U: H * 1.3, P: 1400 };
@@ -13,6 +13,22 @@ test('rel 把序号包进 [-total/2, total/2)', () => {
   assert.equal(rel(18, 0, 36), -18);
   assert.equal(rel(17, 0, 36), 17);
   assert.ok(Math.abs(rel(3, 2.4, 36) - 0.6) < 1e-9);
+});
+
+test('两端的书同步淡入淡出：任意翻动位置，可见书的总量不变', () => {
+  const reach = edgeReach(m);
+  assert.equal(reach % 1, 0, '边界落在整格上：左右同步，停稳时两端的书完全显示');
+  // 停稳时没有半透明的书
+  for (let v = -30; v <= 30; v++) assert.ok([0, 1].includes(pose(v, m, table, 0, 0, 0, reach).edge), `v=${v}`);
+  const total = (s: number) => {
+    let sum = 0;
+    for (let v = -30; v <= 30; v++) sum += pose(v - s, m, table, 0, 0, 0, reach).edge;
+    return sum;
+  };
+  const base = total(0);
+  for (const s of [0.1, 0.25, 0.5, 0.75, 0.9]) assert.ok(Math.abs(total(s) - base) < 1e-9, `s=${s}`);
+  // 正中两侧对称
+  assert.equal(pose(reach - 0.3, m, table, 0, 0, 0, reach).edge, pose(-(reach - 0.3), m, table, 0, 0, 0, reach).edge);
 });
 
 test('blend 在 ±1 处连续', () => {
