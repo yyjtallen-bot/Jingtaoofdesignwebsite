@@ -108,13 +108,17 @@
   --z-cursor: 100;
 }
 
-/* 书本装帧配色：bg 底色 / fg 文字 / c1 实色图形 / c2 网点 / edge 描边 */
+/* 书本装帧配色：bg 底色 / fg 文字 / c1 实色图形 / c2 网点 / edge 描边
+   封面设计（src/components/shelf/covers.ts）另用：ac 主色块 / pa 纸色（如手机屏幕）/ on 主色块上的字 */
 [data-binding='bone'] {
   --b-bg: var(--book-bone);
   --b-fg: var(--ink);
   --b-c1: var(--accent);
   --b-c2: var(--ink);
   --b-edge: color-mix(in oklab, var(--ink) 16%, transparent);
+  --b-ac: var(--accent);
+  --b-pa: var(--sheet);
+  --b-on: var(--sheet);
 }
 [data-binding='kraft'] {
   --b-bg: var(--book-kraft);
@@ -122,6 +126,9 @@
   --b-c1: var(--ink);
   --b-c2: var(--accent);
   --b-edge: color-mix(in oklab, var(--ink) 14%, transparent);
+  --b-ac: var(--accent);
+  --b-pa: var(--book-bone);
+  --b-on: var(--sheet);
 }
 [data-binding='ink'] {
   --b-bg: var(--book-ink);
@@ -129,6 +136,9 @@
   --b-c1: var(--paper);
   --b-c2: color-mix(in oklab, var(--paper) 62%, transparent);
   --b-edge: transparent;
+  --b-ac: var(--paper);
+  --b-pa: var(--sheet);
+  --b-on: var(--book-ink);
 }
 [data-binding='accent'] {
   --b-bg: var(--book-accent);
@@ -136,6 +146,9 @@
   --b-c1: var(--paper);
   --b-c2: color-mix(in oklab, var(--paper) 58%, transparent);
   --b-edge: transparent;
+  --b-ac: var(--paper);
+  --b-pa: var(--sheet);
+  --b-on: var(--book-accent);
 }
 
 @media (max-width: 767px) {

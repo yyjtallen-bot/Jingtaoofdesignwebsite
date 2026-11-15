@@ -1,11 +1,14 @@
 ---
-// 封面画面：书架上的封面、分类子页的主图共用。
-// 有 src/assets/covers/<id>.* 就用图片，否则用生成的排版海报（统一版式）。
+// 封面画面：书架上的封面、分类子页的主图共用。优先级：
+//   1. 后台上传的封面图 / src/assets/covers/<id>.*
+//   2. 这本书的专属封面设计（covers.ts，画在 HalftoneDefs 里的 <symbol>，这里只引用）
+//   3. 都没有（比如新加的分类）：生成的排版海报（统一版式）
 // 尺寸随容器变化（内部用 cqw），父元素需要定位并给出宽高。
 import Img from '@/components/Img.astro';
 import { site } from '@/config/site';
 import { getCoverImage } from '@/lib/assets';
 import type { CategoryWithCases } from '@/lib/cases';
+import { hasCover } from './covers';
 import { fallbackMotif, motifs } from './motifs';
 
 interface Props {
@@ -45,6 +48,10 @@ const titleSize = `${Math.min(16, 84 / em).toFixed(2)}cqw`;
         draggable="false"
         loading={eager ? 'eager' : 'lazy'}
       />
+    ) : hasCover(c.id) ? (
+      <svg class="cover-svg" viewBox="0 0 200 280" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <use href={`#cv-${c.id}`} />
+      </svg>
     ) : (
       <div class="art">
         <p class="art-top">
@@ -74,6 +81,13 @@ const titleSize = `${Math.min(16, 84 / em).toFixed(2)}cqw`;
     container-type: inline-size;
     background: var(--b-bg);
     color: var(--b-fg);
+  }
+  .cover-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
   }
   .cover-img {
     position: absolute;
