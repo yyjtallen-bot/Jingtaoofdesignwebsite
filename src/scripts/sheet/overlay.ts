@@ -2,7 +2,7 @@
 //   打开：书架停稳 → 填入子页内容（文字在遮罩下、墨迹半径归零）→ 读封面位置 →
 //         一块纸色方块从封面的位置放大铺满屏幕（1050ms，它就是子页的背景）→
 //         文字 620ms 起逐行升起 → 主图 520ms 起墨迹晕开
-//   关闭：纸按原路缩回当前封面位置（850ms），然后隐藏
+//   关闭：纸按原路缩回当前封面位置（850ms）：内容先淡掉，落到书上时纸淡出露出封面，然后隐藏
 // 书和封面始终待在书架上，只是被纸盖住。
 //
 // 放大方式：外层（纸）用 transform 缩放，内层（内容）做反向缩放保持原大。
@@ -117,7 +117,6 @@ export function initSheet(shelf: HTMLElement, sheet: HTMLElement) {
     const from = boxOf(coverEl.getBoundingClientRect());
     frame.hidden = false;
     sheet.scrollTop = 0;
-    inertTargets.forEach((el) => (el.inert = true));
     history.pushState({ sheet: item.id }, '', item.url);
     document.title = tpl.dataset.sheetTitle || document.title;
 
@@ -125,9 +124,16 @@ export function initSheet(shelf: HTMLElement, sheet: HTMLElement) {
     const visual = node.querySelector<HTMLElement>('[data-ink]');
     if (visual) inkReveal(visual, SHEET.inkStart);
 
+    // 让首页不可操作（inert）要重算整页样式，手机上会让点击后“愣一下”；
+    // 纸铺满之前首页本来就被纸盖着，所以放到放大结束后再做。
+    const settle = () => {
+      inertTargets.forEach((el) => (el.inert = true));
+      closeBtn.focus({ preventScroll: true });
+    };
+
     // 2–3. 纸色方块从封面的位置放大铺满屏幕（它就是子页背景）
-    closeBtn.focus({ preventScroll: true });
     if (reduced) {
+      settle();
       state = 'open';
       return;
     }
@@ -143,6 +149,7 @@ export function initSheet(shelf: HTMLElement, sheet: HTMLElement) {
         // 放大结束：去掉变换，恢复成普通的全屏页面
         frame.getAnimations().forEach((a) => a.cancel());
         sheet.getAnimations().forEach((a) => a.cancel());
+        settle();
         state = 'open';
       })
       .catch(() => {});
@@ -169,6 +176,13 @@ export function initSheet(shelf: HTMLElement, sheet: HTMLElement) {
       const opts: KeyframeAnimationOptions = { duration: SHEET.closeDuration, easing: 'linear', fill: 'both' };
       const shrink = frame.animate(outer, opts);
       sheet.animate(inner, opts);
+      // 纸里的内容先淡掉（缩小的是一张干净的纸，不会露出错位的子页画面）；
+      // 落到书上的最后一段，纸再淡出，露出下面的封面，不会“啪”地跳变。
+      sheet.animate([{ opacity: 1 }, { opacity: 0, offset: SHEET.closeContentFade }, { opacity: 0 }], opts);
+      frame.animate([{ opacity: 1 }, { opacity: 1, offset: SHEET.closePaperFade }, { opacity: 0 }], {
+        ...opts,
+        easing: 'ease-in',
+      });
       await shrink.finished.catch(() => {});
     }
 

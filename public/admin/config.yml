@@ -170,7 +170,7 @@ collections:
                     value: bone
                   - label: 牛皮
                     value: kraft
-                  - label: 墨黑
+                  - label: 苍绿
                     value: ink
                   - label: 主色
                     value: accent
@@ -204,7 +204,7 @@ collections:
                     value: bone
                   - label: 牛皮
                     value: kraft
-                  - label: 墨黑
+                  - label: 苍绿
                     value: ink
                   - label: 主色
                     value: accent
@@ -238,7 +238,7 @@ collections:
                     value: bone
                   - label: 牛皮
                     value: kraft
-                  - label: 墨黑
+                  - label: 苍绿
                     value: ink
                   - label: 主色
                     value: accent
@@ -272,7 +272,7 @@ collections:
                     value: bone
                   - label: 牛皮
                     value: kraft
-                  - label: 墨黑
+                  - label: 苍绿
                     value: ink
                   - label: 主色
                     value: accent
@@ -306,7 +306,7 @@ collections:
                     value: bone
                   - label: 牛皮
                     value: kraft
-                  - label: 墨黑
+                  - label: 苍绿
                     value: ink
                   - label: 主色
                     value: accent
@@ -340,7 +340,7 @@ collections:
                     value: bone
                   - label: 牛皮
                     value: kraft
-                  - label: 墨黑
+                  - label: 苍绿
                     value: ink
                   - label: 主色
                     value: accent
@@ -374,7 +374,7 @@ collections:
                     value: bone
                   - label: 牛皮
                     value: kraft
-                  - label: 墨黑
+                  - label: 苍绿
                     value: ink
                   - label: 主色
                     value: accent
@@ -408,7 +408,7 @@ collections:
                     value: bone
                   - label: 牛皮
                     value: kraft
-                  - label: 墨黑
+                  - label: 苍绿
                     value: ink
                   - label: 主色
                     value: accent
@@ -442,7 +442,7 @@ collections:
                     value: bone
                   - label: 牛皮
                     value: kraft
-                  - label: 墨黑
+                  - label: 苍绿
                     value: ink
                   - label: 主色
                     value: accent
@@ -476,7 +476,7 @@ collections:
                     value: bone
                   - label: 牛皮
                     value: kraft
-                  - label: 墨黑
+                  - label: 苍绿
                     value: ink
                   - label: 主色
                     value: accent
@@ -510,7 +510,7 @@ collections:
                     value: bone
                   - label: 牛皮
                     value: kraft
-                  - label: 墨黑
+                  - label: 苍绿
                     value: ink
                   - label: 主色
                     value: accent
@@ -544,7 +544,7 @@ collections:
                     value: bone
                   - label: 牛皮
                     value: kraft
-                  - label: 墨黑
+                  - label: 苍绿
                     value: ink
                   - label: 主色
                     value: accent

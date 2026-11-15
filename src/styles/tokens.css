@@ -73,9 +73,9 @@
   --radius-book: 1.5px;                      /* 书本边角的轻微圆润 */
 
   /* ── 书本装帧色（src/data/categories.ts 里的 binding） ── */
-  --book-bone: #f4efe4;    /* 米白 */
+  --book-bone: #faf7f0;    /* 米白：比子页纸（--sheet）略白一档，展开时能看出边界 */
   --book-kraft: #d4c5a7;   /* 牛皮 */
-  --book-ink: #262521;     /* 墨黑 */
+  --book-ink: #728478;     /* 苍绿（原墨黑 #262521 太突兀，2026-11 改；id 仍叫 ink） */
   --book-accent: var(--accent);
 
   /* ── 书架几何 ─────────────────────────── */

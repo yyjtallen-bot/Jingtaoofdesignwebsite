@@ -1,6 +1,6 @@
 // 12 个作品分类 = 书架上的 12 本书（顺序即书架顺序）。
 //
-// binding：这本书的装帧色 —— bone 米白 / kraft 牛皮 / ink 墨黑 / accent 主色
+// binding：这本书的装帧色 —— bone 米白 / kraft 牛皮 / ink 苍绿 / accent 主色
 //          （具体色值在 src/styles/tokens.css 的 --book-* 里）
 //
 // 封面：默认用代码生成的统一版式排版海报（几何图形见 src/components/shelf/motifs.ts）。

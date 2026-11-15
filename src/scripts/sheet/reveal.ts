@@ -3,13 +3,16 @@
 //   文字逐行升起（translateY(110%) → 0，900ms，延迟 620 + 第 i 行 × 75ms）
 //   主图墨迹晕开（从 520ms 起，7 个圆形遮罩经扭曲滤镜成不规则墨边，
 //               各自按延迟在 1250ms 内从半径 0 长满，先快后慢）
-//   收回：反向裁切回封面，850ms
+//   收回：纸缩回封面，850ms（内容先淡掉、落到书上时纸再淡出，见 overlay.ts）
 // 首页浮层和独立页面共用。尊重“减少动态效果”：直接显示。
 
 export const SHEET = {
   /** 纸从封面长出 / 收回 */
   openDuration: 1050,
   closeDuration: 850,
+  /** 收回时：内容在前 30% 淡掉；纸从 70% 处开始淡出，露出封面 */
+  closeContentFade: 0.3,
+  closePaperFade: 0.7,
   ease: 'cubic-bezier(0.76, 0, 0.18, 1)',
   /** 纸的圆角（从封面开始时） */
   radius: 3,
@@ -25,6 +28,7 @@ export const SHEET = {
 
 const reducedQuery = matchMedia('(prefers-reduced-motion: reduce)');
 export const prefersReduced = () => reducedQuery.matches;
+const mobileQuery = matchMedia('(max-width: 767px)');
 
 /** [data-rise] 元素从遮罩下方逐行升起 */
 export function rise(root: ParentNode, delay = 0) {
@@ -97,6 +101,16 @@ export function inkReveal(el: HTMLElement, delay = 0): Promise<void> {
       </mask>
     </defs>
     <rect width="${W}" height="${H}" fill="${paper}" mask="url(#${id}-m)"/>`;
+  // 手机屏幕像素密度高（2–3 倍），扭曲滤镜每帧都要重算，很吃力：
+  // 只在手机上，让墨迹层按 1 倍密度计算再放大显示。形状不变，计算量降到几分之一。
+  const k = mobileQuery.matches ? Math.min(3, window.devicePixelRatio || 1) : 1;
+  if (k > 1) {
+    svg.style.width = `${100 / k}%`;
+    svg.style.height = `${100 / k}%`;
+    svg.style.transformOrigin = '0 0';
+    svg.style.transform = `scale(${k})`;
+    svg.style.willChange = 'transform';
+  }
   el.append(svg);
 
   const circles = [...svg.querySelectorAll('circle')];
