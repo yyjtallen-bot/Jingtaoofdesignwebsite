@@ -115,6 +115,13 @@ export function initShelf(root: HTMLElement) {
   let tiltY = 0;
   let dotYear = yearOf(active);
   let hovered = -1;
+  /** 书架转动过，停稳后要按鼠标位置重新判断悬停的书 */
+  let hoverStale = false;
+  /** 屏幕坐标下的那本书（没有则 -1） */
+  const bookAt = (x: number, y: number) => {
+    const el = document.elementFromPoint(x, y)?.closest<HTMLElement>('.book');
+    return el && zone.contains(el) ? Number(el.dataset.v) : -1;
+  };
   const pointer = { x: 0, y: 0, inside: false };
 
   let m: Metrics;
@@ -386,12 +393,22 @@ export function initShelf(root: HTMLElement) {
     tiltX += (tx - tiltX) * kt;
     tiltY += (ty - tiltY) * kt;
 
+    // 悬停抽出：书架转动时不抽出任何书，停稳后再按鼠标此刻所在的位置重新判断。
+    // （鼠标不动、书在下面滑过时，浏览器会补发“鼠标移动”，记下的是路过的那本书，
+    //   不重新判断的话，那本书会带着抽出的状态滑到别处——两侧会有书莫名升起。）
+    const still = !dragging && Math.abs(T - s) < 0.02;
+    if (!still) hoverStale = true;
+    else if (hoverStale) {
+      hoverStale = false;
+      hovered = pointer.inside ? bookAt(pointer.x, pointer.y) : -1;
+    }
+
     // 书本
     let moving = s !== T || Math.abs(tx - tiltX) > 0.01 || Math.abs(ty - tiltY) > 0.01;
     const kl = approach(SHELF.liftRate, dt);
     for (const b of books) {
       const r = rel(b.v, s, TOTAL);
-      const want = hovered === b.v && !dragging && Math.abs(r) > 0.5 ? 1 : 0;
+      const want = still && hovered === b.v && Math.abs(r) > 0.5 ? 1 : 0;
       if (reduced) b.lift = want;
       else if (b.lift !== want) {
         b.lift += (want - b.lift) * kl;
@@ -561,8 +578,11 @@ export function initShelf(root: HTMLElement) {
       pointer.x = e.clientX;
       pointer.y = e.clientY;
       pointer.inside = true;
-      const el = (e.target as Element | null)?.closest?.<HTMLElement>('.book');
-      hovered = el && zone.contains(el) ? Number(el.dataset.v) : -1;
+      // 书架转动中不记录（停稳后会重新判断，见 update 里的“悬停抽出”）
+      if (!hoverStale) {
+        const el = (e.target as Element | null)?.closest?.<HTMLElement>('.book');
+        hovered = el && zone.contains(el) ? Number(el.dataset.v) : -1;
+      }
       wake();
     },
     { passive: true },
